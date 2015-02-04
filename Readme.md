@@ -3,12 +3,17 @@
 Group all dicty genes into functional groups and compute respective codon usages.
 
 
+## Usage
+
+The main functionality can be found in `main.py`.
+Furthermore, additional filters can be put into `filters.py`.
+
+
 ## Used Data
 
 All data was acquired from [dictybase](http://dictybase.org/).
 
 
-## Usage
+## Used Modules
 
-The main functionality can be found in `main.py`.
-Furthermore, additional filters can be put into `filters.py`.
+Most of the work is done using the [biopython](http://biopython.org/) module.
