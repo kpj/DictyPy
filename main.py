@@ -51,7 +51,7 @@ def parse_fasta_file(fname, verbose=True):
 
 
 def main():
-    genes, ugenes = parse_fasta_file('dicty_primary_protein')
+    genes, ugenes = parse_fasta_file('dicty_primary_cds')
 
 if __name__ == '__main__':
     main()
