@@ -1,7 +1,16 @@
+import sys
 import os.path
 
-from Bio import SeqIO
+from io import StringIO
 
+from Bio import SeqIO
+from Bio.Blast import NCBIWWW
+from Bio.Blast import NCBIXML
+
+
+def frint(s, **kwargs):
+    print(s, **kwargs)
+    sys.stdout.flush()
 
 def parse_filters():
     """ Return list of filters given in `filter.py`
@@ -43,15 +52,55 @@ def parse_fasta_file(fname, verbose=True):
             known_genes.append(r)
 
     if verbose:
-        print('%i known genes' % len(known_genes))
-        print('%i unknown genes' % len(unknown_genes))
-        print('%i skipped genes' % len(skipped_genes))
+        frint('%i known genes' % len(known_genes))
+        frint('%i unknown genes' % len(unknown_genes))
+        frint('%i skipped genes' % len(skipped_genes))
 
     return known_genes, unknown_genes
+
+def check_unknown_genes(unknown_genes):
+    """ Use BLAST to find similar sequences in order to gain additional information
+    """
+    E_VALUE_THRESHOLD = 0.04
+
+    def blaster(record):
+        frint('Blasting %s' % record.id, end='')
+        fname = 'blast_%s.dat' % record.id
+
+        if os.path.isfile(fname):
+            frint(' (cached)...', end=' ')
+            with open(fname, 'r') as fd:
+                txt = StringIO(fd.read())
+        else:
+            frint('...', end=' ')
+            result_handle = NCBIWWW.qblast('blastn', 'nt', record.format('fasta'))
+            blast_results = result_handle.read()
+
+            with open(fname, 'w') as fd:
+                fd.write(blast_results)
+
+            txt = StringIO(blast_results)
+
+        results = NCBIXML.parse(txt)
+        frint('Done')
+
+        for r in results:
+            for alignment in r.alignments:
+                for hsp in alignment.hsps:
+                    e_value = hsp.expect
+                    if e_value > E_VALUE_THRESHOLD:
+                        continue
+
+                    print(alignment.title)
+
+
+    for r in unknown_genes:
+        blaster(r)
 
 
 def main():
     genes, ugenes = parse_fasta_file('dicty_primary_cds')
+    check_unknown_genes(ugenes)
 
 if __name__ == '__main__':
     main()
