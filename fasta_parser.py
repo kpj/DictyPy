@@ -3,8 +3,6 @@ import os.path
 
 from Bio import SeqIO
 
-from utils import frint
-
 
 def parse_filters():
     """ Return list of filters given in `filter.py`
@@ -51,8 +49,8 @@ class FastaParser(object):
                 known_genes.append(r)
 
         if verbose:
-            frint('%i known genes' % len(known_genes))
-            frint('%i unknown genes' % len(unknown_genes))
-            frint('%i skipped genes' % len(skipped_genes))
+            print('%i known genes' % len(known_genes))
+            print('%i unknown genes' % len(unknown_genes))
+            print('%i skipped genes' % len(skipped_genes))
 
         return known_genes, unknown_genes

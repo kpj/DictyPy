@@ -1,13 +1,3 @@
-import sys
-
-
-def frint(s, **kwargs):
-    """ Print with auto-flush
-    """
-
-    print(s, **kwargs)
-    sys.stdout.flush()
-
 class BaseFilter(object):
     """ Base class of every filter
     """

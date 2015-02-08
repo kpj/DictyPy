@@ -5,8 +5,6 @@ from io import StringIO
 from Bio.Blast import NCBIWWW
 from Bio.Blast import NCBIXML
 
-from utils import frint
-
 
 class Blaster(object):
     """ Blast 'em up
@@ -26,15 +24,15 @@ class Blaster(object):
         """ Use BLAST to find similar sequences in order to gain additional information
         """
 
-        frint('Blasting %s' % record.id, end='')
+        print('Blasting %s' % record.id, end='', flush=True)
         fname = os.path.join(Blaster.CACHE_DIR, 'blast_%s.dat' % record.id)
 
         if os.path.isfile(fname):
-            frint(' (cached)...', end=' ')
+            print(' (cached)...', end=' ', flush=True)
             with open(fname, 'r') as fd:
                 txt = StringIO(fd.read())
         else:
-            frint('...', end=' ')
+            print('...', end=' ', flush=True)
             result_handle = NCBIWWW.qblast('blastn', 'nt', record.format('fasta'))
             blast_results = result_handle.read()
 
@@ -44,7 +42,7 @@ class Blaster(object):
             txt = StringIO(blast_results)
 
         results = NCBIXML.parse(txt)
-        frint('Done')
+        print('Done', flush=True)
 
         for r in results:
             for alignment in r.alignments:
