@@ -16,8 +16,8 @@ class DNAAnalyzer(object):
             try:
                 codu = self.get_codon_usage(str(gene.seq))
                 usages.append(codu)
-            except TypeError:
-                print('invalid gene %s' % gene.id)
+            except TypeError as e:
+                print('invalid gene %s (%s)' % (gene.id, str(e)))
 
         avg_codu = collections.defaultdict(int)
         cma_len_diff = collections.defaultdict(int)
