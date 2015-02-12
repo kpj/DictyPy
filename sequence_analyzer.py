@@ -11,11 +11,6 @@ class DNAAnalyzer(object):
     def get_avg_codon_usage(self, genes):
         """ Average codon usage over multiple genes
         """
-
-        #
-        # Note: this doesn't give reasonable results for now
-        #
-
         usages = []
         for gene in genes:
             try:
@@ -25,12 +20,17 @@ class DNAAnalyzer(object):
                 print('invalid gene %s' % gene.id)
 
         avg_codu = collections.defaultdict(int)
+        cma_len_diff = collections.defaultdict(int)
         for i, usa in enumerate(usages):
             for codon, usage in usa.items():
                 if usage is None:
+                    cma_len_diff[codon] += 1
                     avg_codu[codon] = None if avg_codu[codon] == 0 else avg_codu[codon]
                 else:
-                    avg_codu[codon] = utils.next_cma(usage, i, 0 if avg_codu[codon] is None else avg_codu[codon])
+                    if avg_codu[codon] is None:
+                        avg_codu[codon] = usage
+                    else:
+                        avg_codu[codon] = utils.next_cma(usage, i-cma_len_diff[codon], avg_codu[codon])
 
         return dict(avg_codu)
 

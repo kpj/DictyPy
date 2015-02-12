@@ -10,7 +10,7 @@ class TestCodonUsage(TestCase):
     def setUp(self):
         self.dnana = DNAAnalyzer()
         self.seq = 'AAAAAGAAA'
-        self.genes = [SeqRecord(Seq('AAAAAAAAG')), SeqRecord(Seq('AAAAAGAAA')), SeqRecord(Seq('TTTCCCTTT'))]
+        self.genes = [SeqRecord(Seq('AAAAAAAAG')), SeqRecord(Seq('AAAAAGAAA')), SeqRecord(Seq('TTTTTCTTT')), SeqRecord(Seq('TTCTTTTTC'))]
 
     def test_codon_counter(self):
         count = self.dnana._count_codons(self.seq)
@@ -35,3 +35,5 @@ class TestCodonUsage(TestCase):
         self.assertEqual(round(avg_codu['AAG'], 3), round(0.3333, 3))
         self.assertEqual(avg_codu['AAT'], None)
         self.assertEqual(avg_codu['AAC'], None)
+        self.assertEqual(round(avg_codu['TTT'], 3), round(0.5, 3))
+        self.assertEqual(round(avg_codu['TTC'], 3), round(0.5, 3))
