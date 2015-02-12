@@ -37,7 +37,7 @@ class FastaParser(object):
 
             skip = False
             for f in filters:
-                if not f().apply(r):
+                if not f.skip and not f().apply(r):
                     skip = True
             if skip:
                 skipped_genes.append(r)

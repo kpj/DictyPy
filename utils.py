@@ -1,6 +1,7 @@
 class BaseFilter(object):
     """ Base class of every filter
     """
+    skip = False
 
     def __init__(self):
         pass

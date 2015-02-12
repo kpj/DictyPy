@@ -64,7 +64,7 @@ class DNAAnalyzer(object):
         codon_count = CodonUsage.CodonsDict.copy()
 
         for i in range(0, len(seq), 3):
-            codon = seq[i:i + 3]
+            codon = seq[i:i+3]
             if codon in codon_count:
                 codon_count[codon] += 1
             else:
