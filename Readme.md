@@ -1,5 +1,7 @@
 # DictyPy
 
+[![Build Status](https://travis-ci.org/kpj/DictyPy.svg?branch=master)](https://travis-ci.org/kpj/DictyPy)
+
 Group all dicty genes into functional groups and compute respective codon usages.
 
 
