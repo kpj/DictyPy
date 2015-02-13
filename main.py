@@ -1,11 +1,13 @@
 from fasta_parser import FastaParser
 from blaster import Blaster
 from sequence_analyzer import DNAAnalyzer
+from classifiers import GeneNameClassifier
 
 
 def main():
     farser = FastaParser('dicty_primary_cds')
-    genes, ugenes = farser.parse()
+    data = farser.parse(GeneNameClassifier())
+    genes, ugenes = data['known_genes'], data['unknown_genes']
 
     #blaster = Blaster(ugenes)
     #blaster.crawl()
