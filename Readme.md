@@ -19,4 +19,5 @@ All data was acquired from [dictybase](http://dictybase.org/).
 
 ## Used Modules
 
-Most of the work is done using the [biopython](http://biopython.org/) module.
+The external (non-standard) python modules used in this project are:
+* [biopython](http://biopython.org/)
