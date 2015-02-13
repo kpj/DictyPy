@@ -3,5 +3,8 @@ python:
     - "2.7"
     - "3.4"
 install:
-    - "pip install biopython"
-script: nosetests -v
+    - pip install biopython
+    - pip install coveralls
+script:
+    - coverage run setup.py test
+after_success: coveralls
