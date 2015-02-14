@@ -24,3 +24,8 @@ def next_cma(new_value, list_len, old_cma):
         'list_len' is the length of the currently being averaged list before adding the new value
     """
     return (new_value + list_len * old_cma) / (list_len + 1)
+
+def extract_gene_name(record):
+    """ Extract gene name from FastA entry description
+    """
+    return record.description.split('|')[3].split()[1] # regex anyone?
