@@ -14,8 +14,7 @@ Furthermore, additional filters can be put into `filters.py`.
 
 ## Used Data
 
-All data was acquired from [dictybase](http://dictybase.org/).
-
+Dicty's primary CDS was acquired from [dictybase](http://dictybase.org/). The gene annotations were retrieved using [AmiGO 2](http://amigo.geneontology.org/amigo/landing).
 
 ## Used Modules
 
