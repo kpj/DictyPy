@@ -21,14 +21,13 @@ class GeneAnnotator(object):
         table_body = table.find('tbody')
         rows = table_body.find_all('tr')
 
-        # only check first row and first annotation
-        annotation = ''
+        # only check first row
+        annotations = []
         for ele in rows[0].find_all('a'):
             if ele['href'].startswith('http://amigo.geneontology.org/amigo/term/GO:'):
-                annotation = ele.text
-                break
+                annotations.append(ele.text)
 
-        return annotation
+        return ' | '.join(annotations)
 
     def _query_amigo(self, gene_name):
         """ Query amigo database over webinterface which requires javascript
