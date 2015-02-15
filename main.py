@@ -18,10 +18,10 @@ def annotate_genes(genes, fname):
     for gene in genes:
         try:
             anno = ganno.get_direct_annotation(gene)
+            foo[gene.id] = anno
         except:
             print('Error:', gene, '\n')
             errors += 1
-        foo[gene.id] = anno
     json.dump(foo, open(fname, 'w'))
     print(errors, 'errors')
 
@@ -51,7 +51,7 @@ def main():
     #blaster = Blaster(ugenes)
     #blaster.crawl()
 
-    #annotate_genes(genes, 'results/annotated_genes.json')
+    annotate_genes(genes, 'results/annotated_genes.json')
     group_genes(genes, 'results/annotated_genes.json', 'results/grouped_genes.json')
 
 
