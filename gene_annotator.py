@@ -27,7 +27,7 @@ class GeneAnnotator(object):
             if ele['href'].startswith('http://amigo.geneontology.org/amigo/term/GO:'):
                 annotations.append(ele.text)
 
-        return ' | '.join(annotations)
+        return annotations
 
     def _query_amigo(self, gene_name):
         """ Query amigo database over webinterface which requires javascript
