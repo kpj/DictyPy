@@ -18,5 +18,5 @@ setup(
 	test_suite='nose.collector',
 	tests_require=['nose'],
 	scripts=[],
-	install_requires=[]
+	requires=['biopython', 'beautifulsoup4', 'selenium']
 )
