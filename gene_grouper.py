@@ -10,7 +10,7 @@ class GeneGrouper(object):
         groups = collections.defaultdict(list)
 
         for gene_id, record in gene_dict.items():
-            groups[record.annotations].append(record)
+            groups[record.annotations[0]].append(record)
 
         return dict(groups)
 
