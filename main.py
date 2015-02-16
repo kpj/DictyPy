@@ -29,8 +29,8 @@ def group_genes(genes, fname_in, fname_out):
     """ Group genes given in filename and save results elsewhere
     """
     gego = GeneGrouper()
-    transf = gego.transform(genes, json.load(open(fname_in, 'r')))
-    groups = gego.group(transf)
+    rec_list = gego.transform(genes, json.load(open(fname_in, 'r')))
+    groups = gego.group(rec_list)
 
     foo = []
     dnana = DNAAnalyzer()
