@@ -17,5 +17,5 @@ for(cur in data) {
 
 melted.df <- melt(df, id.var="group")
 ggplot(melted.df, aes(x=group, y=value, fill=variable)) +
-  geom_bar(stat="identity") +
+  geom_bar(stat="identity", width=.5) +
   ggsave(filename="codon_usage.png")
