@@ -1,4 +1,4 @@
-import json
+import json, subprocess
 from pprint import pprint
 
 from fasta_parser import FastaParser
@@ -41,7 +41,10 @@ def group_genes(genes, fname_in, fname_out):
             'average_codon_usage': avg_codu
         })
     json.dump(foo, open(fname_out, 'w'))
-    pprint(foo)
+    #pprint(foo)
+
+def plot_grouped_genes():
+    subprocess.check_call(['Rscript', 'plotter.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def main():
     farser = FastaParser('dicty_primary_cds')
@@ -51,9 +54,9 @@ def main():
     #blaster = Blaster(ugenes)
     #blaster.crawl()
 
-    annotate_genes(genes, 'results/annotated_genes.json')
+    #annotate_genes(genes, 'results/annotated_genes.json')
     group_genes(genes, 'results/annotated_genes.json', 'results/grouped_genes.json')
-
+    plot_grouped_genes()
 
 if __name__ == '__main__':
     main()

@@ -1,0 +1,21 @@
+library(ggplot2)
+library(rjson)
+library(reshape2)
+
+
+group_filter <- c('translation', 'transcription', 'stress response', 'cell cycle control', 'rnai', 'cell signaling', 'splicing', 'cytokinesis')
+
+fname <- "results/grouped_genes.json"
+data <- fromJSON(file=fname, method='C')
+
+df <- data.frame(group=character(0), AAA=numeric(0), AAG=numeric(0))
+for(cur in data) {
+  if(cur$group %in% group_filter) {
+    df <- rbind(df, data.frame(group=cur$group, AAA=cur$average_codon_usage$AAA, AAG=cur$average_codon_usage$AAG))
+  }
+}
+
+melted.df <- melt(df, id.var="group")
+ggplot(melted.df, aes(x=group, y=value, fill=variable)) +
+  geom_bar(stat="identity") +
+  ggsave(filename="codon_usage.png")
