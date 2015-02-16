@@ -20,3 +20,5 @@ Dicty's primary CDS was acquired from [dictybase](http://dictybase.org/). The ge
 
 The external (non-standard) python modules used in this project are:
 * [biopython](http://biopython.org/)
+* [selenium](https://selenium-python.readthedocs.org/)
+* [beautifulsoup](http://www.crummy.com/software/BeautifulSoup/bs4/doc/)
