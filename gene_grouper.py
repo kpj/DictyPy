@@ -1,11 +1,11 @@
-import collections
+import collections, json
 
 
 class GeneGrouper(object):
     def choose_annotation(self, record):
         """ Choose "best" annotation out of list of possible ones
         """
-        keywords = ['translation', 'transcription', 'stress response', 'cell cycle control', 'rnai', 'cell signaling', 'splicing', 'cytokinesis']
+        keywords = json.load(open('keywords.json'))
         annos = ' | '.join(record.annotations)
 
         for kw in keywords:

@@ -3,7 +3,7 @@ library(rjson)
 library(reshape2)
 
 
-group_filter <- c('translation', 'transcription', 'stress response', 'cell cycle control', 'rnai', 'cell signaling', 'splicing', 'cytokinesis')
+group_filter <- fromJSON(file="keywords.json", method='C')
 
 fname <- "results/grouped_genes.json"
 data <- fromJSON(file=fname, method='C')
