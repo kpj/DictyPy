@@ -35,10 +35,10 @@ def group_genes(genes, fname_in, fname_out):
     foo = []
     dnana = DNAAnalyzer()
     for group_name, group_genes in groups.items():
-        avg_codu = dnana.get_avg_codon_usage(group_genes)
+        cum_codu = dnana.get_cum_codon_usage(group_genes)
         foo.append({
             'group': group_name,
-            'average_codon_usage': avg_codu
+            'cumulative_codon_usage': cum_codu
         })
     json.dump(foo, open(fname_out, 'w'))
     #pprint(foo)

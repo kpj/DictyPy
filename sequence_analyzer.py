@@ -34,6 +34,22 @@ class DNAAnalyzer(object):
 
         return dict(avg_codu)
 
+    def get_cum_codon_usage(self, genes):
+        """ Get cumulative codon usage over multiple genes
+        """
+        cum_codu = collections.defaultdict(list)
+        for gene in genes:
+            try:
+                codu = self.get_codon_usage(str(gene.seq))
+
+                for codon, usage in codu.items():
+                    if not usage is None:
+                        cum_codu[codon].append(usage)
+            except TypeError as e:
+                print('invalid gene %s (%s)' % (gene.id, str(e)))
+
+        return dict(cum_codu)
+
     def get_codon_usage(self, seq):
         """ Calculate codon usage in given sequence
         """
