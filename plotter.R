@@ -15,7 +15,7 @@ for(cur in data) {
     aag <- cur$cumulative_codon_usage$AAG
     sd <- round(sd(aaa), 3)
     
-    df <- rbind(df, data.frame(group=paste0(cur$group, "\n", "(sd:", sd, ")"), AAA=mean(aaa), AAG=mean(aag)))
+    df <- rbind(df, data.frame(group=paste0(cur$group, "\n", "(sd: ", sd, ")"), AAA=mean(aaa), AAG=mean(aag)))
   }
 }
 df <- df[order(df$AAA),]
