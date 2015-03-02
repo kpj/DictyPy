@@ -25,7 +25,7 @@ class GeneAnnotator(object):
         annotations = []
         for ele in rows[0].find_all('a'):
             if ele['href'].startswith('http://amigo.geneontology.org/amigo/term/GO:'):
-                annotations.append(ele.text)
+                annotations.append(ele.text.lower())
 
         return annotations
 

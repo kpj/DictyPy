@@ -4,13 +4,8 @@ import collections
 
 from Bio import SeqIO
 
+from utils import parse_filters
 
-def parse_filters():
-    """ Return list of filters given in `filter.py`
-    """
-    import filters
-    classes = [getattr(filters, x) for x in dir(filters) if isinstance(getattr(filters, x), type) and x != 'BaseFilter']
-    return classes
 
 class FastaParser(object):
     DATA_DIR = 'data'
@@ -19,11 +14,29 @@ class FastaParser(object):
         self.records = SeqIO.parse(os.path.join(FastaParser.DATA_DIR, fname), format='fasta')
         self.filters = parse_filters()
 
-    def parse(self, classifier, verbose=True):
+        self.data = None
+        self.classifier = None
+
+    def get_result(self):
+        """ Return result(s) as specified by classifier
+        """
+        if self.classifier is None:
+            raise RuntimeError('No classifier specified, did you forget to call parse(..) first?')
+        if self.data is None:
+            raise RuntimeError('No data generated, maybe the parse(..) function screwed up?')
+
+        res = []
+        for key in self.classifier.result:
+            res.append(self.data[key])
+
+        return res if len(res) > 1 else res[0]
+
+    def parse(self, Classifier, verbose=True):
         """ Parse FastA file and group sequences into known and unknown ones.
             A sequence is known, if its name is given, i.e. doesn't start with 'DDB_G'
         """
-        data = collections.defaultdict(list)
+        self.classifier = Classifier()
+        self.data = collections.defaultdict(list)
         skipped = []
 
         for r in self.records:
@@ -35,16 +48,14 @@ class FastaParser(object):
                 skipped.append(r)
                 continue
 
-            for rule in classifier.rules:
+            for rule in self.classifier.rules:
                 if rule['condition'](r):
-                    data[rule['datafield']].append(r)
+                    self.data[rule['datafield']].append(r)
                     break
 
-        data = dict(data)
+        self.data = dict(self.data)
 
         if verbose:
-            for k, v in data.items():
+            for k, v in self.data.items():
                 print('%i -> %s' % (len(v), k))
             print('%i skipped' % len(skipped))
-
-        return data
