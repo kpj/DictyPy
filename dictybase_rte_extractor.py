@@ -1,5 +1,6 @@
 import os, os.path
 import urllib.request
+import json
 
 from bs4 import BeautifulSoup
 
@@ -25,10 +26,9 @@ for page in _pages:
         soup = BeautifulSoup(fd.read())
         for row in soup.find_all('tr', {'class': 'row2'}):
             name = row.find('a').getText()
+            product = row.find_all('td')[-2].getText()
             if name.startswith('DDB_G') and name.endswith('_RTE'):
-                rte.append(name)
+                rte.append('%s:%s' % (name, product))
 
 # save results
-with open('dicty_rte_list.txt', 'w') as fd:
-    for g in rte:
-        fd.write(g + '\n')
+json.dump(rte, open('results/dicty_rte_list.json', 'w'))

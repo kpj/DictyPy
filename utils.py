@@ -1,3 +1,6 @@
+from gene_annotator import GeneAnnotator
+
+
 class BaseFilter(object):
     """ Base class of every filter
     """
@@ -12,8 +15,6 @@ class BaseFilter(object):
 class BaseClassifier(object):
     """ Base class of every classifier
     """
-    requires_annotations = False
-
     def __init__(self):
         """ self.rules is a list of dicts, whereeach entry has the two keys
             'condition' and 'datafield'.
@@ -25,6 +26,18 @@ class BaseClassifier(object):
         """
         self.result = []
         self.rules = []
+        self.skip_filter = []
+
+    def get_groupname(self, record):
+        """ Generate groupname for given record
+        """
+        raise NotImplementedError('Groupname detection was not implemented')
+
+    @staticmethod
+    def preprocess(genes):
+        """ Preprocess genes in some way
+        """
+        return genes
 
 def next_cma(new_value, list_len, old_cma):
     """ Calculate next cumulative moving average
@@ -43,3 +56,37 @@ def parse_filters(post_annotation=False):
     import filters
     classes = [getattr(filters, x) for x in dir(filters) if isinstance(getattr(filters, x), type) and x != 'BaseFilter' and getattr(filters, x).post_annotation == post_annotation]
     return classes
+
+def load_gene_annotations(genes, fname):
+    """ Load gene annotations from the web
+    """
+    foo = {}
+    errors = 0
+    ganno = GeneAnnotator()
+    for gene in genes:
+        try:
+            anno = ganno.get_direct_annotation(gene)
+            foo[gene.id] = anno
+        except:
+            print('Error:', gene, '\n')
+            errors += 1
+    json.dump(foo, open(fname, 'w'))
+    print(errors, 'errors')
+
+def annotate_seq_records(genes, annotations):
+    """ Annotate SeqRecord entries
+    """
+    def get_record(gene_id):
+        for gene in genes:
+            if gene.id == gene_id:
+                return gene
+        return None
+
+    record_list = []
+    for gene_id, annotation in annotations.items():
+        rec = get_record(gene_id)
+
+        if not rec is None:
+            rec.annotations['manual'] = annotation
+            record_list.append(rec)
+    return record_list
