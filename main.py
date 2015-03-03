@@ -16,7 +16,7 @@ def group_genes(Classifier, genes, fname_out):
     groups = gegro.group(genes)
 
     foo = []
-    dnana = DNAAnalyzer()
+    dnana = DNAAnalyzer(strict=False)
     for group_name, group_genes in groups.items():
         # apply post-annotation filters
         filters = parse_filters(post_annotation=True)
@@ -45,7 +45,7 @@ def plot_grouped_genes():
     subprocess.check_call(['Rscript', 'plotter.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def apply_procedure(Classifier):
-    farser = FastaParser('dicty_primary_cds')
+    farser = FastaParser(Classifier.data_file)
     farser.parse(Classifier)
     genes = farser.get_result()
 

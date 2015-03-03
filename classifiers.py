@@ -7,7 +7,7 @@ from utils import BaseClassifier, extract_gene_name, load_gene_annotations, anno
 class GeneNameClassifier(BaseClassifier):
     """ Divide genes into known and unknown ones by checking if they have a name
     """
-    requires_annotations = True
+    data_file = 'dicty_primary_cds'
 
     def __init__(self):
         super().__init__()
@@ -48,40 +48,20 @@ class GeneNameClassifier(BaseClassifier):
 class RTEClassifier(BaseClassifier):
     """ Check if gene is part of a retroelement
     """
+    data_file = 'DD_ComplexRepeats.fa'
 
     def __init__(self):
         super().__init__()
-        
-        self.rtes = []
-        self.products = {}
-        for rte in json.load(open('results/dicty_rte_list.json', 'r')):
-            gene, product = rte.split(':')
-            gene = '_'.join(gene.split('_')[:-1])
 
-            self.rtes.append(gene)
-            self.products[gene] = product
-
-        def rte_detector(record):
-            parts = record.id.split('|')
-
-            if len(parts) == 2:
-                return parts[1] in self.rtes
-
-            return False
-
+        self.rtes = ['_'.join(gene.split('_')[:-1]) for gene in json.load(open('results/dicty_rte_list.json', 'r'))]
         self.result = ['rte']
         self.rules = [
             {
-                'condition': rte_detector,
+                'condition': lambda record: True,
                 'datafield': 'rte'
             }
         ]
         self.skip_filter = [FunctionalGroupFilter]
 
     def get_groupname(self, record):
-        gene = record.id.split('|')[1]
-        prod = self.products[gene]
-
-        prod = prod.split()[0]
-
-        return prod
+        return record.id.split()[0]

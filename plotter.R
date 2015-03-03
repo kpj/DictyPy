@@ -11,14 +11,14 @@ for(cur in data) {
   aaa <- cur$cumulative_codon_usage$AAA
   aag <- cur$cumulative_codon_usage$AAG
   sd <- round(sd(aaa), 3)
-  
-  df <- rbind(df, data.frame(group=paste0(cur$group, "\n", "(sd: ", sd, ")"), AAA=mean(aaa), AAG=mean(aag)))
+
+  df <- rbind(df, data.frame(group=paste0(cur$group, " ", "(sd: ", sd, ")"), AAA=mean(aaa), AAG=mean(aag)))
 }
 df <- df[order(df$AAA),]
 df$group <- factor(df$group, levels=df$group, ordered=TRUE)
 
 melted.df <- melt(df, id.var="group")
 ggplot(melted.df, aes(x=group, y=value, fill=variable)) +
-  #theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0)) +
+  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0)) +
   geom_bar(stat="identity", width=.5) +
   ggsave(filename="codon_usage.png")

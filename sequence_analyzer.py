@@ -8,6 +8,9 @@ import utils
 class DNAAnalyzer(object):
     """ The functions 'get_codon_usage' and '_count_codons' are adapted from http://biopython.org/DIST/docs/api/Bio.SeqUtils.CodonUsage-pysrc.html
     """
+    def __init__(self, strict=True):
+        self.strict = strict
+
     def get_avg_codon_usage(self, genes):
         """ Average codon usage over multiple genes
         """
@@ -84,6 +87,7 @@ class DNAAnalyzer(object):
             if codon in codon_count:
                 codon_count[codon] += 1
             else:
-                raise TypeError('illegal codon %s' % codon)
+                if self.strict:
+                    raise TypeError('illegal codon %s' % codon)
 
         return codon_count

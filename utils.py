@@ -15,6 +15,8 @@ class BaseFilter(object):
 class BaseClassifier(object):
     """ Base class of every classifier
     """
+    data_file = ''
+
     def __init__(self):
         """ self.rules is a list of dicts, whereeach entry has the two keys
             'condition' and 'datafield'.
