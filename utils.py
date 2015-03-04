@@ -85,10 +85,20 @@ def annotate_seq_records(genes, annotations):
         return None
 
     record_list = []
+    processed_names = []
     for gene_id, annotation in annotations.items():
         rec = get_record(gene_id)
 
         if not rec is None:
             rec.annotations['manual'] = annotation
+
             record_list.append(rec)
+            processed_names.append(rec.id)
+
+    # don't neglect entries which have no annotation
+    for gene in genes:
+        if not gene.id in processed_names:
+            gene.annotations['manual'] = []
+            record_list.append(gene)
+
     return record_list

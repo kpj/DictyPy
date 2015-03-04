@@ -53,8 +53,8 @@ def apply_procedure(Classifier):
     plot_grouped_genes()
 
 def main():
-    #apply_procedure(GeneNameClassifier)
-    apply_procedure(RTEClassifier)
+    apply_procedure(GeneNameClassifier)
+    #apply_procedure(RTEClassifier)
 
 
 if __name__ == '__main__':

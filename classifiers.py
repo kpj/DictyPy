@@ -12,8 +12,12 @@ class GeneNameClassifier(BaseClassifier):
     def __init__(self):
         super().__init__()
 
-        self.result = ['known_genes']
+        self.result = ['known_genes', 'rte']
         self.rules = [
+            {
+                'condition': lambda record: extract_gene_name(record).endswith('_RTE'),
+                'datafield': 'rte'
+            },
             {
                 'condition': lambda record: extract_gene_name(record).startswith('DDB_G'),
                 'datafield': 'unknown_genes'
@@ -24,17 +28,22 @@ class GeneNameClassifier(BaseClassifier):
             }
         ]
 
+        self.retroelements = set(['_'.join(gene.split('_')[:-1]) for gene in json.load(open('results/dicty_rte_list.json', 'r'))])
+        self.keywords = ['translation', 'transcription', 'stress response', 'cell cycle', 'rnai', 'cell signaling', 'splicing', 'cytokinesis', 'dna recombination']
+
     def get_groupname(self, record):
         """ Choose "best" annotation out of list of possible ones
         """
-        keywords = json.load(open('keywords.json'))
+        egn = extract_gene_name(record)
+        if egn.endswith('_RTE'): return 'rte'
+
         annos = ' | '.join(record.annotations['manual'])
 
-        for kw in keywords:
+        for kw in self.keywords:
             if kw.lower() in annos.lower():
                 return kw
 
-        return record.annotations['manual'][0]
+        return 'other' #record.annotations['manual'][0]
 
     @staticmethod
     def preprocess(genes):
@@ -61,7 +70,6 @@ class RTEClassifier(BaseClassifier):
                 'datafield': 'rte'
             }
         ]
-        self.skip_filter = [FunctionalGroupFilter]
 
     def get_groupname(self, record):
         return record.id.split()[0]

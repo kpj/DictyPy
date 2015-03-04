@@ -27,9 +27,9 @@ class FastaParser(object):
 
         res = []
         for key in self.classifier.result:
-            res.append(self.data[key])
+            res.extend(self.data[key])
 
-        return res if len(res) > 1 else res[0]
+        return res
 
     def parse(self, Classifier, verbose=True):
         """ Parse FastA file and group sequences into known and unknown ones.
