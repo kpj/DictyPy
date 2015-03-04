@@ -2,7 +2,8 @@ from gene_annotator import GeneAnnotator
 
 
 class BaseFilter(object):
-    """ Base class of every filter
+    """ Base class of every filter.
+        Filters are the first measure to reduce the amount of data processed by this program and are executed on every entry present in the given fasta file. They should thus not be too resource intensive.
     """
     skip = False
     post_annotation = False # apply this filter after annotation step
@@ -13,21 +14,15 @@ class BaseFilter(object):
         raise NotImplementedError('Filter apply method not implemented')
 
 class BaseClassifier(object):
-    """ Base class of every classifier
+    """ Base class of every classifier.
+        Classifiers are used to group genes into their respective group. This is their logical group they will considered to be in in later processing steps.
     """
+    RESULTS_DIR = 'results'
     data_file = ''
 
     def __init__(self):
-        """ self.rules is a list of dicts, whereeach entry has the two keys
-            'condition' and 'datafield'.
-            If 'condition' yields True, the respective gene is stored in 'datafield'.
-            'condition' is a lambda function which takes single argument, a record.
-            E.g. "lambda record: True" would work as a default case (only use as last element in list).
-
-            self.result is the field which should be processed eventually
+        """ Init some variables with their default values
         """
-        self.result = []
-        self.rules = []
         self.skip_filter = []
 
     def get_groupname(self, record):

@@ -12,42 +12,32 @@ class GeneNameClassifier(BaseClassifier):
     def __init__(self):
         super().__init__()
 
-        self.result = ['known_genes', 'rte']
-        self.rules = [
-            {
-                'condition': lambda record: extract_gene_name(record).endswith('_RTE'),
-                'datafield': 'rte'
-            },
-            {
-                'condition': lambda record: extract_gene_name(record).startswith('DDB_G'),
-                'datafield': 'unknown_genes'
-            },
-            {
-                'condition': lambda record: True,
-                'datafield': 'known_genes'
-            }
-        ]
-
-        self.retroelements = set(['_'.join(gene.split('_')[:-1]) for gene in json.load(open('results/dicty_rte_list.json', 'r'))])
-        self.keywords = ['translation', 'transcription', 'stress response', 'cell cycle', 'rnai', 'cell signaling', 'splicing', 'cytokinesis', 'dna recombination']
+        self.retroelements = set(['_'.join(gene.split('_')[:-1]) for gene in json.load(open(os.path.join(BaseClassifier.RESULTS_DIR, 'dicty_rte_list.json'), 'r'))])
+        self.keywords = ['translation', 'transcription', 'stress response', 'cell cycle', 'rnai', 'cell signaling', 'splicing', 'cytokinesis', 'dna recombination', 'replication', 'transport', 'endocytosis']
 
     def get_groupname(self, record):
         """ Choose "best" annotation out of list of possible ones
         """
+        gnames = []
+        gnames.append('all')
+
         egn = extract_gene_name(record)
-        if egn.endswith('_RTE'): return 'rte'
+        if egn.endswith('_RTE'): gnames.append('rte')
 
         annos = ' | '.join(record.annotations['manual'])
 
         for kw in self.keywords:
             if kw.lower() in annos.lower():
-                return kw
+                gnames.append(kw)
+                break
 
-        return 'other' #record.annotations['manual'][0]
+        if len(gnames) == 1: gnames.append('other')
+
+        return gnames
 
     @staticmethod
     def preprocess(genes):
-        fname = 'results/annotated_genes.json'
+        fname = os.path.join(BaseClassifier.RESULTS_DIR, 'annotated_genes.json')
 
         if not os.path.isfile(fname):
             load_gene_annotations(genes, fname)
@@ -62,14 +52,7 @@ class RTEClassifier(BaseClassifier):
     def __init__(self):
         super().__init__()
 
-        self.rtes = ['_'.join(gene.split('_')[:-1]) for gene in json.load(open('results/dicty_rte_list.json', 'r'))]
-        self.result = ['rte']
-        self.rules = [
-            {
-                'condition': lambda record: True,
-                'datafield': 'rte'
-            }
-        ]
+        self.rtes = ['_'.join(gene.split('_')[:-1]) for gene in json.load(open(os.path.join(BaseClassifier.RESULTS_DIR, 'dicty_rte_list.json'), 'r'))]
 
     def get_groupname(self, record):
-        return record.id.split()[0]
+        return [record.id.split()[0]]

@@ -1,4 +1,4 @@
-import json, subprocess
+import json, os.path, subprocess
 from pprint import pprint
 
 from fasta_parser import FastaParser
@@ -38,7 +38,7 @@ def group_genes(Classifier, genes, fname_out):
             'group': group_name,
             'cumulative_codon_usage': cum_codu
         })
-    json.dump(foo, open(fname_out, 'w'))
+    json.dump(foo, open(os.path.join(Classifier.RESULTS_DIR, fname_out), 'w'))
     #pprint(foo)
 
 def plot_grouped_genes():
@@ -46,10 +46,9 @@ def plot_grouped_genes():
 
 def apply_procedure(Classifier):
     farser = FastaParser(Classifier.data_file)
-    farser.parse(Classifier)
-    genes = farser.get_result()
+    genes = farser.parse()
 
-    group_genes(Classifier, genes, 'results/grouped_genes.json')
+    group_genes(Classifier, genes, 'grouped_genes.json')
     plot_grouped_genes()
 
 def main():
