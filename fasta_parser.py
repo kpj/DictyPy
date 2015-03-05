@@ -18,14 +18,19 @@ class FastaParser(object):
         """ Parse FastA file and group sequences into known and unknown ones.
             A sequence is known, if its name is given, i.e. doesn't start with 'DDB_G'
         """
+        filter_stats = collections.defaultdict(int)
         data = []
         for r in self.records:
             skip = False
             for f in self.filters:
                 if not f.skip and not f().apply(r):
+                    filter_stats[f.__name__] += 1
                     skip = True
             if skip: continue
 
             data.append(r)
+
+        if len(filter_stats) > 0: print('Pre-Annotation filters:')
+        for k, v in filter_stats.items(): print(' ', k, '->', v)
 
         return data

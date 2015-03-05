@@ -12,7 +12,7 @@ class GeneGrouper(object):
             This function returns a dict with keys corresponding to the annotation and values being genes as biopythons SeqRecords
         """
         groups = collections.defaultdict(list)
-        stats = collections.defaultdict(int)
+        group_stats = collections.defaultdict(int)
 
         for record in record_list:
             gnames = self.classifier.get_groupname(record)
@@ -22,8 +22,9 @@ class GeneGrouper(object):
 
             for name in gnames:
                 groups[name].append(record)
-                stats[name] += 1
+                group_stats[name] += 1
 
-        for k, v in stats.items(): print(k, '->', v)
+        if len(group_stats) > 0: print('Grouping:')
+        for k, v in group_stats.items(): print(' ', k, '->', v)
 
         return dict(groups)

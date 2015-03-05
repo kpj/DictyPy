@@ -1,4 +1,4 @@
-import json, os.path, subprocess
+import collections, json, os.path, subprocess
 from pprint import pprint
 
 from fasta_parser import FastaParser
@@ -16,6 +16,7 @@ def group_genes(Classifier, genes, fname_out):
     groups = gegro.group(genes)
 
     foo = []
+    filter_stats = collections.defaultdict(int)
     dnana = DNAAnalyzer(strict=False)
     for group_name, group_genes in groups.items():
         # apply post-annotation filters
@@ -25,6 +26,7 @@ def group_genes(Classifier, genes, fname_out):
             skip = False
             for f in filters:
                 if not f.skip and not f().apply(gene):
+                    filter_stats[f.__name__] += 1
                     skip = True
             if skip: continue
 
@@ -38,6 +40,10 @@ def group_genes(Classifier, genes, fname_out):
             'group': group_name,
             'cumulative_codon_usage': cum_codu
         })
+
+    if len(filter_stats) > 0: print('Post-Annotation filters:')
+    for k, v in filter_stats.items(): print(' ', k, '->', v)
+
     json.dump(foo, open(os.path.join(Classifier.RESULTS_DIR, fname_out), 'w'))
     #pprint(foo)
 
