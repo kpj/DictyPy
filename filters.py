@@ -10,7 +10,7 @@ class LengthFilter(BaseFilter):
     """
 
     def __init__(self):
-        self.threshold = 100
+        self.threshold = 250
 
     def apply(self, record):
         return len(record.seq) > self.threshold
