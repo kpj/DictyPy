@@ -29,7 +29,6 @@ class GeneNameClassifier(BaseClassifier):
         for kw in self.keywords:
             if kw.lower() in annos.lower():
                 gnames.append(kw)
-                break
 
         if len(gnames) == 1: gnames.append('other')
 
