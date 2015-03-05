@@ -16,6 +16,8 @@ class GeneGrouper(object):
 
         for record in record_list:
             gnames = self.classifier.get_groupname(record)
+            if not isinstance(gnames, list): raise RuntimeError('Groupnames returned by classifier must be list')
+
             record.annotations['group_name'] = gnames
 
             for name in gnames:
