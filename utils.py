@@ -1,4 +1,5 @@
 from gene_annotator import GeneAnnotator
+import utils
 
 
 class BaseFilter(object):
@@ -51,7 +52,7 @@ def parse_filters(post_annotation=False):
     """ Return list of filters given in `filter.py`
     """
     import filters
-    classes = [getattr(filters, x) for x in dir(filters) if isinstance(getattr(filters, x), type) and x != 'BaseFilter' and getattr(filters, x).post_annotation == post_annotation]
+    classes = [getattr(filters, x) for x in dir(filters) if isinstance(getattr(filters, x), type) and x != 'BaseFilter' and getattr(filters, x).__bases__[0] == utils.BaseFilter and getattr(filters, x).post_annotation == post_annotation]
     return classes
 
 def load_gene_annotations(genes, fname):
