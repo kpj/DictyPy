@@ -2,6 +2,7 @@ import re, json, operator
 
 from fasta_parser import FastaParser
 from sequence_analyzer import DNAAnalyzer
+import utils
 
 
 def find_special_AAA_freqs(genes):
@@ -41,6 +42,7 @@ def find_longest_A_stretch(genes):
         if len(longest_stretch) > threshold:
             data.append({
                 'gene_id': gene.id,
+                'gene_name': utils.extract_gene_name(gene),
                 'gene_len': len(gene.seq),
                 'stretch': longest_stretch,
                 'stretch_len': len(longest_stretch)
