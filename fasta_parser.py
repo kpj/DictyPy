@@ -23,7 +23,7 @@ class FastaParser(object):
         rec_num = 0
         for r in self.records:
             rec_num += 1
-            
+
             skip = False
             for f in self.filters:
                 if not f.skip and not f().apply(r):
@@ -33,8 +33,9 @@ class FastaParser(object):
 
             data.append(r)
 
-        print('Parsed', rec_num, 'entries')
+        print('%d entries parsed' % rec_num)
         if len(filter_stats) > 0: print('Pre-Annotation filters:')
         for k, v in filter_stats.items(): print(' ', k, '->', v)
 
+        print('%d entries remaining' % len(data))
         return data
