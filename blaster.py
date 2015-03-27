@@ -1,54 +1,80 @@
-import os.path
+import collections
+import os.path, subprocess, time
+import json
+import xml.etree.ElementTree as ET
 
-from io import StringIO
-
-from Bio.Blast import NCBIWWW
-from Bio.Blast import NCBIXML
+from fasta_parser import FastaParser
 
 
 class Blaster(object):
     """ Blast 'em up
     """
-
-    CACHE_DIR = 'cache'
-    E_VALUE_THRESHOLD = 0.04
+    BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastn'
+    DB_PATH = '/home/kpj/blast/db/nt.00'
 
     def __init__(self, genes):
         self.genes = genes
+        self.timer_cache = collections.deque(maxlen=1000)
 
-    def crawl(self):
-        for r in self.genes:
-            self.blast(r)
+    def process(self):
+        print('Blast!')
+        data = []
+        for i, rec in enumerate(self.genes):
+            start = time.time()
 
-    def blast(self, record):
-        """ Use BLAST to find similar sequences in order to gain additional information
-        """
+            res = self._handle_record(rec)
+            data.append(res)
 
-        print('Blasting %s' % record.id, end='', flush=True)
-        fname = os.path.join(Blaster.CACHE_DIR, 'blast_%s.dat' % record.id)
+            self.timer_cache.append(time.time() - start)
+            self._handle_timer(start, i)
+        print()
 
-        if os.path.isfile(fname):
-            print(' (cached)...', end=' ', flush=True)
-            with open(fname, 'r') as fd:
-                txt = StringIO(fd.read())
-        else:
-            print('...', end=' ', flush=True)
-            result_handle = NCBIWWW.qblast('blastn', 'nt', record.format('fasta'))
-            blast_results = result_handle.read()
+        with open('results/blast_result.json', 'w') as fd:
+            json.dump(data, fd)
 
-            with open(fname, 'w') as fd:
-                fd.write(blast_results)
+    def _handle_timer(self, start, cur_index):
+        avg_dur = sum(self.timer_cache) / len(self.timer_cache)
+        remaining_entries = len(self.genes) - cur_index
 
-            txt = StringIO(blast_results)
+        remaining_seconds = avg_dur * remaining_entries
 
-        results = NCBIXML.parse(txt)
-        print('Done', flush=True)
+        m, s = divmod(remaining_seconds, 60)
+        h, m = divmod(m, 60)
 
-        for r in results:
-            for alignment in r.alignments:
-                for hsp in alignment.hsps:
-                    e_value = hsp.expect
-                    if e_value > Blaster.E_VALUE_THRESHOLD:
-                        continue
+        print('\r>> %d:%02d:%02d remaining' % (h, m, s), end='')
 
-                    print(alignment.title)
+    def _handle_record(self, record):
+        res = self._blast(str(record.seq))
+
+        info = {}
+        info['hits'] = []
+        info['gene'] = record.id
+
+        blast_result = res.find('BlastOutput_iterations').find('Iteration').find('Iteration_hits')
+        for hit in blast_result.findall('Hit'):
+            hit_id = hit.find('Hit_id').text
+            info['hits'].append(hit_id)
+
+        return info
+
+    def _blast(self, seq):
+        cmd = [
+            Blaster.BLAST_PATH,
+            '-db', Blaster.DB_PATH,
+            '-outfmt', '5', # xml output
+            '-num_threads', '8',
+            '-query', '-' # read sequence from stdin
+        ]
+
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        stdout, stderr = proc.communicate(input=seq.encode('utf-8'))
+
+        return ET.fromstring(stdout)
+
+
+if __name__ == '__main__':
+    farser = FastaParser('dicty_primary_cds')
+    genes = farser.parse()
+
+    blaster = Blaster(genes)
+    blaster.process()
