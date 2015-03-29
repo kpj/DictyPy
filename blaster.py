@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 from fasta_parser import FastaParser
 
 
-class Blaster(object):
+class BaseBlaster(object):
     """ Blast 'em up
     """
     BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastn'
@@ -16,13 +16,17 @@ class Blaster(object):
         self.genes = genes
         self.timer_cache = collections.deque(maxlen=1000)
 
+    def _handle_record(self, record, blast_result):
+        raise NotImplementedError('Record handling not implemented')
+
     def process(self):
         print('Blast!')
         data = []
         for i, rec in enumerate(self.genes):
             start = time.time()
 
-            res = self._handle_record(rec)
+            blast_res = self._blast(str(rec.seq))
+            res = self._handle_record(rec, blast_res)
             data.append(res)
 
             self.timer_cache.append(time.time() - start)
@@ -43,38 +47,38 @@ class Blaster(object):
 
         print('\r>> %d:%02d:%02d remaining' % (h, m, s), end='')
 
-    def _handle_record(self, record):
-        res = self._blast(str(record.seq))
-
-        info = {}
-        info['hits'] = []
-        info['gene'] = record.id
-
-        blast_result = res.find('BlastOutput_iterations').find('Iteration').find('Iteration_hits')
-        for hit in blast_result.findall('Hit'):
-            hit_id = hit.find('Hit_id').text
-            info['hits'].append(hit_id)
-
-        return info
-
     def _blast(self, seq):
         cmd = [
-            Blaster.BLAST_PATH,
-            '-db', Blaster.DB_PATH,
+            BaseBlaster.BLAST_PATH,
+            '-db', BaseBlaster.DB_PATH,
             '-outfmt', '5', # xml output
             '-num_threads', '8',
             '-query', '-' # read sequence from stdin
         ]
+        # -qcov_hsp_perc
 
         proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         stdout, stderr = proc.communicate(input=seq.encode('utf-8'))
 
         return ET.fromstring(stdout)
 
+class GeneBlaster(BaseBlaster):
+    def _handle_record(self, record, blast_result):
+        info = {}
+        info['hits'] = []
+        info['gene'] = record.id
+
+        blast_result = blast_result.find('BlastOutput_iterations').find('Iteration').find('Iteration_hits')
+        for hit in blast_result.findall('Hit'):
+            hit_id = hit.find('Hit_id').text
+            info['hits'].append(hit_id)
+
+        return info
+
 
 if __name__ == '__main__':
     farser = FastaParser('dicty_primary_cds')
     genes = farser.parse()
 
-    blaster = Blaster(genes)
+    blaster = GeneBlaster(genes)
     blaster.process()
