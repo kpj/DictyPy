@@ -9,8 +9,8 @@ from fasta_parser import FastaParser
 class BaseBlaster(object):
     """ Blast 'em up
     """
-    BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastn'
-    DB_PATH = '/home/kpj/blast/db/nt.00'
+    BLAST_PATH = None
+    DB_PATH = None
 
     def __init__(self, genes):
         self.genes = genes
@@ -49,8 +49,8 @@ class BaseBlaster(object):
 
     def _blast(self, seq):
         cmd = [
-            BaseBlaster.BLAST_PATH,
-            '-db', BaseBlaster.DB_PATH,
+            self.BLAST_PATH,
+            '-db', self.DB_PATH,
             '-outfmt', '5', # xml output
             '-num_threads', '8',
             '-query', '-' # read sequence from stdin
@@ -60,9 +60,15 @@ class BaseBlaster(object):
         proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         stdout, stderr = proc.communicate(input=seq.encode('utf-8'))
 
+        with open('foo', 'w') as fd:
+            fd.write(stdout.decode('utf-8'))
+
         return ET.fromstring(stdout)
 
 class GeneBlaster(BaseBlaster):
+    BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastn'
+    DB_PATH = '/home/kpj/blast/db/nt.00'
+
     def _handle_record(self, record, blast_result):
         info = {}
         info['hits'] = []
@@ -75,10 +81,22 @@ class GeneBlaster(BaseBlaster):
 
         return info
 
+class ViralBlaster(BaseBlaster):
+    BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastp'
+    DB_PATH = '/home/kpj/blast/db/nr/nr.00'
 
-if __name__ == '__main__':
-    farser = FastaParser('dicty_primary_cds')
+    def _handle_record(self, record, blast_result):
+        return []
+
+
+def blast(data_file, Blaster):
+    farser = FastaParser(data_file)
     genes = farser.parse()
 
-    blaster = GeneBlaster(genes)
+    blaster = Blaster(genes)
     blaster.process()
+
+
+if __name__ == '__main__':
+    #blast('dicty_primary_cds', GeneBlaster)
+    blast('dicty_primary_protein', ViralBlaster)
