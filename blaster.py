@@ -1,7 +1,8 @@
-import collections
 import os.path, subprocess, time
 import json
 import xml.etree.ElementTree as ET
+
+from progressbar import ProgressBar
 
 from fasta_parser import FastaParser
 
@@ -14,38 +15,25 @@ class BaseBlaster(object):
 
     def __init__(self, genes):
         self.genes = genes
-        self.timer_cache = collections.deque(maxlen=1000)
 
     def _handle_record(self, record, blast_result):
         raise NotImplementedError('Record handling not implemented')
 
     def process(self):
-        print('Blast!')
+        pbar = ProgressBar(maxval=len(self.genes))
+        pbar.start()
+
         data = []
         for i, rec in enumerate(self.genes):
-            start = time.time()
-
             blast_res = self._blast(str(rec.seq))
             res = self._handle_record(rec, blast_res)
             data.append(res)
 
-            self.timer_cache.append(time.time() - start)
-            self._handle_timer(start, i)
-        print()
+            pbar.update(i)
+        pbar.finish()
 
         with open('results/blast_result.json', 'w') as fd:
             json.dump(data, fd)
-
-    def _handle_timer(self, start, cur_index):
-        avg_dur = sum(self.timer_cache) / len(self.timer_cache)
-        remaining_entries = len(self.genes) - cur_index
-
-        remaining_seconds = avg_dur * remaining_entries
-
-        m, s = divmod(remaining_seconds, 60)
-        h, m = divmod(m, 60)
-
-        print('\r>> %d:%02d:%02d remaining' % (h, m, s), end='')
 
     def _blast(self, seq):
         cmd = [
