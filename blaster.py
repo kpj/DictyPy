@@ -17,6 +17,8 @@ class BaseBlaster(object):
         self.genes = genes
 
     def _handle_record(self, record, blast_result):
+        """ Process record and blast result in some way and return what is supposed to be stored for this entry
+        """
         raise NotImplementedError('Record handling not implemented')
 
     def process(self):
