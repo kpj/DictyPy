@@ -6,10 +6,15 @@ Group all dicty genes into functional groups and compute respective codon usages
 
 
 ## Usage
-The program is started by calling `python main.py`.
+The program is started by calling `python main.py`. Blast-specific applications can be executed via `python blaster.py`.
 
 
-## Notes
+## Notes for Blast
+#### Setup
+Setup a local blast instance by running `./blast_setup.sh`. Before initializing the local database, download the list of taxids-to-be-extracted via `python taxid_crawler.py`. Then simply execute `./blast_db_setup.sh` (this might take a while and requires loads of RAM).
+
+
+## Notes for the Main Program
 ### Classifiers
 Classifiers need to have a static variable `data_file` specifying the fasta file they are going to act on. They may furthermore have a static `preprocessing(genes)` function which acts on the given list of biopython's SeqRecord entries.
 Their most important part is the `get_groupname(self, record)` method, which assigns a record to its logical group (as this function returns a list, it is possible to assign one entry to multiple groups). This group is then used in all later processing steps.

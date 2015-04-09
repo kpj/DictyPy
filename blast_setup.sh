@@ -4,3 +4,5 @@ cd ncbi-blast-2.2.30+-src/c++/
 
 ./configure
 make
+
+#PATH="$PATH:$PWD/ReleaseMT/bin/"
