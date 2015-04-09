@@ -78,3 +78,15 @@ while read tid ; do
 done < "taxids.txt"
 
 create_new_db "$new_db_name" "$gi_list"
+
+
+<<'COMMENT'
+# list dbs in current directory
+$ blastdbcmd -list . -recursive -list_outfmt '%t (%p): %n seqs'
+
+# export db as fasta file
+$ blastdbcmd -db "$db" -entry all -outfmt '%f' -out "$db.fa"
+
+# get info about db
+$ blastdbcmd -db "$db" -info
+COMMENT
