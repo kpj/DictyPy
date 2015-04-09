@@ -73,10 +73,17 @@ class GeneBlaster(BaseBlaster):
 
 class ViralBlaster(BaseBlaster):
     BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastp'
-    DB_PATH = '/home/kpj/blast/db/nr/nr.00'
+    DB_PATH = '/home/kpj/university/Semester06/ISC/custom_blast_db'
 
     def _handle_record(self, record, blast_result):
-        return []
+        blast_result = blast_result.find('BlastOutput_iterations').find('Iteration').find('Iteration_hits')
+
+        hids = []
+        for hit in blast_result.findall('Hit'):
+            hit_id = hit.find('Hit_id').text
+            hids.append(hit_id)
+
+        return hids
 
 
 def blast(data_file, Blaster):
@@ -89,4 +96,7 @@ def blast(data_file, Blaster):
 
 if __name__ == '__main__':
     #blast('dicty_primary_cds', GeneBlaster)
-    blast('dicty_primary_protein', ViralBlaster)
+    #blast('mosquitoe_virus', ViralBlaster)
+
+    res = ViralBlaster([])._blast('\n'.join(open('data/mosquitoe_virus', 'r').read().split('\n')[1:]))
+    print(ET.tostring(res, encoding='utf8', method='xml').decode('unicode_escape'))
