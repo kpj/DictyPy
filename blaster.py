@@ -80,8 +80,16 @@ class ViralBlaster(BaseBlaster):
 
         hids = []
         for hit in blast_result.findall('Hit'):
-            hit_id = hit.find('Hit_id').text
-            hids.append(hit_id)
+            hsp = hit.find('Hit_hsps').find('Hsp')
+
+            tmp = {
+                'id': hit.find('Hit_id').text,
+                'def': hit.find('Hit_def').text,
+                'hit_len': hit.find('Hit_len').text,
+                'seq_len': len(record.seq),
+                'gaps': hsp.find('Hsp_gaps').text
+            }
+            hids.append(tmp)
 
         return hids
 
@@ -96,7 +104,4 @@ def blast(data_file, Blaster):
 
 if __name__ == '__main__':
     #blast('dicty_primary_cds', GeneBlaster)
-    #blast('mosquitoe_virus', ViralBlaster)
-
-    res = ViralBlaster([])._blast('\n'.join(open('data/mosquitoe_virus', 'r').read().split('\n')[1:]))
-    print(ET.tostring(res, encoding='utf8', method='xml').decode('unicode_escape'))
+    blast('dicty_primary_protein', ViralBlaster)
