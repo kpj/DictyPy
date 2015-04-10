@@ -1,4 +1,4 @@
-import os.path, subprocess, time
+import os, os.path, subprocess, time
 import json
 import xml.etree.ElementTree as ET
 
@@ -12,6 +12,7 @@ class BaseBlaster(object):
     """
     BLAST_PATH = None
     DB_PATH = None
+    TMP_DIR = 'blast_tmp'
 
     def __init__(self, genes):
         self.genes = genes
@@ -21,7 +22,13 @@ class BaseBlaster(object):
         """
         raise NotImplementedError('Record handling not implemented')
 
+    def _finalize(self):
+        pass
+
     def process(self):
+        if not os.path.isdir(BaseBlaster.TMP_DIR):
+            os.mkdir(BaseBlaster.TMP_DIR)
+
         pbar = ProgressBar(maxval=len(self.genes))
         pbar.start()
 
@@ -36,6 +43,8 @@ class BaseBlaster(object):
 
         with open('results/blast_result.json', 'w') as fd:
             json.dump(data, fd)
+
+        self._finalize()
 
     def _blast(self, seq):
         cmd = [
@@ -76,6 +85,10 @@ class ViralBlaster(BaseBlaster):
     DB_PATH = '/home/kpj/university/Semester06/ISC/custom_blast_db'
 
     def _handle_record(self, record, blast_result):
+        with open(os.path.join(ViralBlaster.TMP_DIR, '%s.xml' % record.id), 'w') as fd:
+            bstr = ET.tostring(blast_result, encoding='utf8', method='xml').decode('unicode_escape')
+            fd.write(bstr)
+
         blast_result = blast_result.find('BlastOutput_iterations').find('Iteration').find('Iteration_hits')
 
         hids = []
@@ -89,9 +102,16 @@ class ViralBlaster(BaseBlaster):
                 'seq_len': len(record.seq),
                 'gaps': hsp.find('Hsp_gaps').text
             }
-            hids.append(tmp)
+            hids.append((record.id, tmp))
 
         return hids
+
+    def _finalize(self):
+        # more on https://github.com/lindenb/xslt-sandbox/tree/master/stylesheets/bio/ncbi
+
+        for fn in os.listdir(ViralBlaster.TMP_DIR):
+            name = os.path.splitext(os.path.join(ViralBlaster.TMP_DIR, fn))[0]
+            os.system('xsltproc --novalid data/blast2html.xsl "{name}.xml" > "{name}.xhtml"'.format(name=name))
 
 
 def blast(data_file, Blaster):
