@@ -1,5 +1,5 @@
 import os, os.path, subprocess, time
-import json
+import csv, json
 import xml.etree.ElementTree as ET
 
 from progressbar import ProgressBar
@@ -12,7 +12,6 @@ class BaseBlaster(object):
     """
     BLAST_PATH = None
     DB_PATH = None
-    TMP_DIR = 'blast_tmp'
 
     def __init__(self, genes):
         self.genes = genes
@@ -22,13 +21,10 @@ class BaseBlaster(object):
         """
         raise NotImplementedError('Record handling not implemented')
 
-    def _finalize(self):
+    def _finalize(self, data):
         pass
 
     def process(self):
-        if not os.path.isdir(BaseBlaster.TMP_DIR):
-            os.mkdir(BaseBlaster.TMP_DIR)
-
         pbar = ProgressBar(maxval=len(self.genes))
         pbar.start()
 
@@ -36,15 +32,12 @@ class BaseBlaster(object):
         for i, rec in enumerate(self.genes):
             blast_res = self._blast(str(rec.seq))
             res = self._handle_record(rec, blast_res)
-            data.append(res)
+            data.extend(res)
 
             pbar.update(i)
         pbar.finish()
 
-        with open('results/blast_result.json', 'w') as fd:
-            json.dump(data, fd)
-
-        self._finalize()
+        self._finalize(data)
 
     def _blast(self, seq):
         cmd = [
@@ -78,17 +71,18 @@ class GeneBlaster(BaseBlaster):
             hit_id = hit.find('Hit_id').text
             info['hits'].append(hit_id)
 
-        return info
+        return [info]
+
+    def _finalize(self, data):
+        with open('results/blast_result.json', 'w') as fd:
+            json.dump(data, fd)
 
 class ViralBlaster(BaseBlaster):
     BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastp'
     DB_PATH = '/home/kpj/university/Semester06/ISC/custom_blast_db'
 
     def _handle_record(self, record, blast_result):
-        with open(os.path.join(ViralBlaster.TMP_DIR, '%s.xml' % record.id), 'w') as fd:
-            bstr = ET.tostring(blast_result, encoding='utf8', method='xml').decode('unicode_escape')
-            fd.write(bstr)
-
+        #bstr = ET.tostring(blast_result, encoding='utf8', method='xml').decode('unicode_escape')
         blast_result = blast_result.find('BlastOutput_iterations').find('Iteration').find('Iteration_hits')
 
         hids = []
@@ -97,21 +91,20 @@ class ViralBlaster(BaseBlaster):
 
             tmp = {
                 'id': hit.find('Hit_id').text,
-                'def': hit.find('Hit_def').text,
-                'hit_len': hit.find('Hit_len').text,
-                'seq_len': len(record.seq),
-                'gaps': hsp.find('Hsp_gaps').text
+                'e_value': float(hsp.find('Hsp_evalue').text),
+                'identity': int(hsp.find('Hsp_identity').text),
+                'align_len': int(hsp.find('Hsp_align-len').text)
             }
             hids.append((record.id, tmp))
 
         return hids
 
-    def _finalize(self):
-        # more on https://github.com/lindenb/xslt-sandbox/tree/master/stylesheets/bio/ncbi
-
-        for fn in os.listdir(ViralBlaster.TMP_DIR):
-            name = os.path.splitext(os.path.join(ViralBlaster.TMP_DIR, fn))[0]
-            os.system('xsltproc --novalid data/blast2html.xsl "{name}.xml" > "{name}.xhtml"'.format(name=name))
+    def _finalize(self, data):
+        with open('results/blast_result.csv', 'w', newline='') as fd:
+            cwriter = csv.writer(fd)
+            for d_id, e in data:
+                ident = '%s/%s %f%%' % (e['identity'], e['align_len'], (100. * (e['identity'] / e['align_len'])))
+                cwriter.writerow([d_id, e['id'], e['e_value'], ident])
 
 
 def blast(data_file, Blaster):
