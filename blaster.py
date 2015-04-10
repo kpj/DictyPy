@@ -52,9 +52,6 @@ class BaseBlaster(object):
         proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         stdout, stderr = proc.communicate(input=seq.encode('utf-8'))
 
-        with open('foo', 'w') as fd:
-            fd.write(stdout.decode('utf-8'))
-
         return ET.fromstring(stdout)
 
 class GeneBlaster(BaseBlaster):
