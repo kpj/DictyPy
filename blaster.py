@@ -1,11 +1,23 @@
-import os, os.path, subprocess, time
+import os, os.path, re, subprocess, time
 import csv, json
 import xml.etree.ElementTree as ET
 
 from progressbar import ProgressBar
 
 from fasta_parser import FastaParser
+from utils import extract_gene_name
 
+
+class DefParser(object):
+    def __init__(self, blast_def):
+        self.bdef = blast_def
+
+    def get_virus_name(self):
+        res = re.search(r'\[.*?\]', self.bdef)
+        return res.group()[1:-2].strip() if res is not None else self.bdef
+
+    def get_gi(self):
+        return '|'.join(self.bdef.split('|')[:3])
 
 class BaseBlaster(object):
     """ Blast 'em up
@@ -78,6 +90,11 @@ class ViralBlaster(BaseBlaster):
     BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastp'
     DB_PATH = '/home/kpj/university/Semester06/ISC/custom_blast_db'
 
+    def __init__(self, genes):
+        super().__init__(genes)
+
+        self.used_gis = set()
+
     def _handle_record(self, record, blast_result):
         #bstr = ET.tostring(blast_result, encoding='utf8', method='xml').decode('unicode_escape')
         blast_result = blast_result.find('BlastOutput_iterations').find('Iteration').find('Iteration_hits')
@@ -85,23 +102,44 @@ class ViralBlaster(BaseBlaster):
         hids = []
         for hit in blast_result.findall('Hit'):
             hsp = hit.find('Hit_hsps').find('Hsp')
+            defp = DefParser(hit.find('Hit_def').text)
 
-            tmp = {
-                'id': hit.find('Hit_id').text,
+            if defp.get_gi() in self.used_gis: continue
+            self.used_gis.add(defp.get_gi())
+
+            dicty = {
+                'id': record.id,
+                'name': extract_gene_name(record)
+            }
+
+            blast = {
+                'virus_name': defp.get_virus_name(),
+                'id': defp.get_gi(),
                 'e_value': float(hsp.find('Hsp_evalue').text),
                 'identity': int(hsp.find('Hsp_identity').text),
                 'align_len': int(hsp.find('Hsp_align-len').text)
             }
-            hids.append((record.id, tmp))
+            hids.append((dicty, blast))
 
         return hids
 
     def _finalize(self, data):
         with open('results/blast_result.csv', 'w', newline='') as fd:
             cwriter = csv.writer(fd)
-            for d_id, e in data:
-                ident = '%s/%s %f%%' % (e['identity'], e['align_len'], (100. * (e['identity'] / e['align_len'])))
-                cwriter.writerow([d_id, e['id'], e['e_value'], ident])
+            cwriter.writerow([
+                'dicty p. id', 'dicty p. name',
+                'virus', 'virus p. id',
+                'e score',
+                'identity (abs.)', 'identity (rel.)'
+            ])
+
+            for dicty, blast in data:
+                cwriter.writerow([
+                    dicty['id'], dicty['name'],
+                    blast['virus_name'], blast['id'],
+                    blast['e_value'],
+                    '%s/%s' % (blast['identity'], blast['align_len']), 100. * (blast['identity'] / blast['align_len'])
+                ])
 
 
 def blast(data_file, Blaster):
