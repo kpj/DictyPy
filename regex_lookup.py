@@ -30,7 +30,7 @@ def lookUp(patterns, data_file):
     farser = FastaParser(data_file)
     genes = farser.parse()
 
-    print('Matching "%s"' % '", "'.join(patterns))
+    print('Matching \n > "%s"' % '"\n > "'.join(patterns))
 
     pbar = ProgressBar(maxval=len(genes))
     pbar.start()
@@ -64,10 +64,10 @@ def lookUp(patterns, data_file):
 
 if __name__ == '__main__':
     regexprs = [
-        '({N}{{{z}}}AGTC{N}{{{y_min},{y_max}}}GTAGT{N}{{{x}}})',
-        '({N}{{{x}}}TGATG{N}{{{y_min},{y_max}}}CTGA{N}{{{z}}})'
+        '(TGATG[AT]{N}{{{x_min},{x_max}}}(?:(?:TGA)|(?:CGA)|(?:TGT)|(?:TTA)|(?:TGC)){N}{{{y_min},{y_max}}}T{N}{{{z_min},{z_max}}}CTGA)',
+        '(TCAG{N}{{{z_min},{z_max}}}A{N}{{{y_min},{y_max}}}(?:(?:TAA)|(?:ACA)|(?:TCG)|(?:TCA)|(?:GCA)){N}{{{x_min},{x_max}}}[AT]CATCA)'
     ]
     lookUp(
-        [s.format(x=5, y_min=30, y_max=120, z=5, N='[AGTCN]') for s in regexprs],
+        [s.format(x_min=10, x_max=50, y_min=2, y_max=40, z_min=12, z_max=45, N='[AGTCN]') for s in regexprs],
         'dicty_primary_genomic'
     )
