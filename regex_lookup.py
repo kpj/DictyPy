@@ -1,4 +1,9 @@
-import csv, re
+import re
+
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+from Bio.Alphabet import IUPAC
 
 from progressbar import ProgressBar
 
@@ -22,7 +27,7 @@ def lookUp(patterns, data_file):
         for pat in patterns:
             match = re.search(pat, seq)
             if not match: continue
-            ret.append((record.description, ', '.join(match.groups()), match.span()))
+            ret.append((record, match))
 
         return ret
 
@@ -49,18 +54,24 @@ def lookUp(patterns, data_file):
         def atoi(text):
             return int(text) if text.isdigit() else text
         return [atoi(c) for c in re.split('(\d+)', text)]
-    res = sorted(res, key=lambda e: natural_keys(get_position(e[0])))
+    res = sorted(res, key=lambda e: natural_keys(get_position(e[0].description)))
 
     # save result
-    with open('results/regex_lookup.csv', 'w') as fd:
-        cwriter = csv.writer(fd)
+    with open('results/regex_lookup.fa', 'w') as fd:
+        for record, match in res:
+            seqs = match.groups()
 
-        cwriter.writerow(['gene name', 'position in genome', 'position in match', 'matched sequence'])
-        for desc, seq, span in res:
-            name = get_gene_name(desc)
-            pos = get_position(desc)
+            name = get_gene_name(record.description)
+            pos = get_position(record.description)
 
-            cwriter.writerow([name, pos, span, seq])
+            for seq in seqs:
+                record = SeqRecord(
+                    Seq(seq, IUPAC.ambiguous_dna),
+                    id=record.id, name=record.name,
+                    description=record.description + ', ' + str(match.span())
+                )
+
+                SeqIO.write(record, fd, 'fasta')
 
 if __name__ == '__main__':
     regexprs = [
