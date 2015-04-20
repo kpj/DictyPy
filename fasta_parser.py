@@ -11,7 +11,10 @@ class FastaParser(object):
     DATA_DIR = 'data'
 
     def __init__(self, fname):
-        self.records = SeqIO.parse(os.path.join(FastaParser.DATA_DIR, fname), format='fasta')
+        full_path = os.path.join(FastaParser.DATA_DIR, fname)
+        if not os.path.isfile(full_path): full_path = fname # use normal path if not found in data dir
+
+        self.records = SeqIO.parse(full_path, format='fasta')
         self.filters = parse_filters()
 
     def parse(self, verbose=True):
