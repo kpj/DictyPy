@@ -153,7 +153,7 @@ class rRNABlaster(BaseBlaster):
     EXTRA_BLAST_ARGS = ['-task', 'blastn']
 
     """
-    BLAST database war create as follows:
+    BLAST database was created as follows:
         $ makeblastdb \
             -dbtype nucl \
             -in "data/rRNA.fa" \
