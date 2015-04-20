@@ -24,9 +24,26 @@ class BaseBlaster(object):
     """
     BLAST_PATH = None
     DB_PATH = None
+    EXTRA_BLAST_ARGS = []
 
     def __init__(self, genes):
         self.genes = genes
+        self.setup()
+
+        # -qcov_hsp_perc
+        self.blast_cmd = [
+            self.BLAST_PATH,
+            '-db', self.DB_PATH,
+            '-outfmt', '5', # xml output
+            '-num_threads', '8',
+            '-query', '-' # read sequence from stdin
+        ]
+        self.blast_cmd += self.EXTRA_BLAST_ARGS
+
+        print('Blasting with\n > ', ' '.join(self.blast_cmd))
+
+    def setup(self):
+        pass
 
     def _handle_record(self, record, blast_result):
         """ Process record and blast result in some way and return what is supposed to be stored for this entry
@@ -52,16 +69,7 @@ class BaseBlaster(object):
         self._finalize(data)
 
     def _blast(self, seq):
-        cmd = [
-            self.BLAST_PATH,
-            '-db', self.DB_PATH,
-            '-outfmt', '5', # xml output
-            '-num_threads', '8',
-            '-query', '-' # read sequence from stdin
-        ]
-        # -qcov_hsp_perc
-
-        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(self.blast_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         stdout, stderr = proc.communicate(input=seq.encode('utf-8'))
 
         return ET.fromstring(stdout)
@@ -90,9 +98,7 @@ class ViralBlaster(BaseBlaster):
     BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastp'
     DB_PATH = '/home/kpj/university/Semester06/ISC/custom_blast_db'
 
-    def __init__(self, genes):
-        super().__init__(genes)
-
+    def setup(self):
         self.used_gis = set()
 
     def _handle_record(self, record, blast_result):
@@ -141,6 +147,37 @@ class ViralBlaster(BaseBlaster):
                     '%s/%s' % (blast['identity'], blast['align_len']), 100. * (blast['identity'] / blast['align_len'])
                 ])
 
+class rRNABlaster(BaseBlaster):
+    BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastn'
+    DB_PATH = '/home/kpj/university/Semester06/ISC/rrna_blast_db'
+    EXTRA_BLAST_ARGS = ['-task', 'blastn']
+
+    """
+    BLAST database war create as follows:
+        $ makeblastdb \
+            -dbtype nucl \
+            -in "data/rRNA.fa" \
+            -input_type fasta \
+            -out rrna_blast_db \
+            -title rrna_blast_db
+    """
+
+    def _handle_record(self, record, blast_result):
+        iter_msg_box = blast_result.find('BlastOutput_iterations').find('Iteration').find('Iteration_message')
+        if not iter_msg_box is None and iter_msg_box.text == 'No hits found': return []
+
+        bstr = ET.tostring(blast_result, encoding='utf8', method='xml').decode('unicode_escape')
+        return [(record, bstr)]
+
+    def _finalize(self, data):
+        rdir = 'rRNA_XML_dump'
+        if not os.path.isdir(rdir):
+            os.mkdir(rdir)
+
+        for record, xml in data:
+            with open(os.path.join(rdir, '%s.xml' % record.id.replace('|', '_')), 'w') as fd:
+                fd.write(xml)
+
 
 def blast(data_file, Blaster):
     farser = FastaParser(data_file)
@@ -152,4 +189,5 @@ def blast(data_file, Blaster):
 
 if __name__ == '__main__':
     #blast('dicty_primary_cds', GeneBlaster)
-    blast('dicty_primary_protein', ViralBlaster)
+    #blast('dicty_primary_protein', ViralBlaster)
+    blast('results/regex_lookup.fa', rRNABlaster)
