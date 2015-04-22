@@ -27,7 +27,7 @@ def get_subsequences(seq):
     if match_p:
         return list(match_p.groups())
 
-    match_n = re.match(r'TCAG([AGTCN]{10})[AGTCN]{2,35}A[AGTCN]{2,4}(?:(?:TAA)|(?:ACA)|(?:TCG)|(?:TCA)|(?:GCA))([AGTCN]{10})[AGTCN]{0,40}[AT]CATCA', seq)
+    match_n = re.match(r'TCAG([AGTCN]{10})[AGTCN]{2,35}A[AGTCN]{2,40}(?:(?:TAA)|(?:ACA)|(?:TCG)|(?:TCA)|(?:GCA))([AGTCN]{10})[AGTCN]{0,40}[AT]CATCA', seq)
     if match_n:
         return list(match_n.groups())
 
