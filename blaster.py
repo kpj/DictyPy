@@ -150,7 +150,7 @@ class ViralBlaster(BaseBlaster):
 class rRNABlaster(BaseBlaster):
     BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastn'
     DB_PATH = '/home/kpj/university/Semester06/ISC/rrna_blast_db'
-    EXTRA_BLAST_ARGS = ['-task', 'blastn']
+    EXTRA_BLAST_ARGS = ['-task', 'blastn-short']
 
     """
     BLAST database was created as follows:
