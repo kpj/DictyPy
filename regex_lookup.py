@@ -73,7 +73,7 @@ def lookUp(patterns, data_file):
     res = sorted(res, key=lambda e: natural_keys(get_position(e[0].description)))
 
     # save result
-    with open('results/regex_lookup.fa', 'w') as fd:
+    with open('results/regex_lookup.fa', 'w') as fd, open('results/regex_lookup_fragments.fa', 'w') as fd_frag:
         for record, match in res:
             seqs = match.groups()
 
@@ -81,14 +81,23 @@ def lookUp(patterns, data_file):
             pos = get_position(record.description)
 
             for seq in seqs:
+                # save full match
+                rec = SeqRecord(
+                    Seq(seq, IUPAC.ambiguous_dna),
+                    id=record.id, name=record.name,
+                    description=record.description + '|' + str(match.span())
+                )
+                SeqIO.write(rec, fd, 'fasta')
+
+                # save match fragments
                 for i, s in enumerate(get_subsequences(seq)):
-                    rec = SeqRecord(
+                    rec_frag = SeqRecord(
                         Seq(s, IUPAC.ambiguous_dna),
                         id=record.id, name=record.name,
                         description=record.description + '|' + str(match.span()) + '|' + ('fragment #%d' % i)
                     )
 
-                    SeqIO.write(rec, fd, 'fasta')
+                    SeqIO.write(rec_frag, fd_frag, 'fasta')
 
 if __name__ == '__main__':
     regexprs = [
