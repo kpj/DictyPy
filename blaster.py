@@ -40,7 +40,7 @@ class BaseBlaster(object):
         ]
         self.blast_cmd += self.EXTRA_BLAST_ARGS
 
-        print('Blasting with\n > ', ' '.join(self.blast_cmd))
+        print('Blasting with\n >', ' '.join(self.blast_cmd))
 
     def setup(self):
         pass
