@@ -102,11 +102,10 @@ class ViralBlaster(BaseBlaster):
         self.used_gis = set()
 
     def _handle_record(self, record, blast_result):
-        #bstr = ET.tostring(blast_result, encoding='utf8', method='xml').decode('unicode_escape')
-        blast_result = blast_result.find('BlastOutput_iterations').find('Iteration').find('Iteration_hits')
+        iter_hits = blast_result.find('BlastOutput_iterations').find('Iteration').find('Iteration_hits')
 
         hids = []
-        for hit in blast_result.findall('Hit'):
+        for hit in iter_hits.findall('Hit'):
             hsp = hit.find('Hit_hsps').find('Hsp')
             defp = DefParser(hit.find('Hit_def').text)
 
@@ -123,13 +122,18 @@ class ViralBlaster(BaseBlaster):
                 'id': defp.get_gi(),
                 'e_value': float(hsp.find('Hsp_evalue').text),
                 'identity': int(hsp.find('Hsp_identity').text),
-                'align_len': int(hsp.find('Hsp_align-len').text)
+                'align_len': int(hsp.find('Hsp_align-len').text),
+                'xml': ET.tostring(blast_result, encoding='utf8', method='xml').decode('unicode_escape')
             }
             hids.append((dicty, blast))
 
         return hids
 
     def _finalize(self, data):
+        rdir = 'viral_XML_dump'
+        if not os.path.isdir(rdir):
+            os.mkdir(rdir)
+
         with open('results/blast_result.csv', 'w', newline='') as fd:
             cwriter = csv.writer(fd)
             cwriter.writerow([
@@ -146,6 +150,9 @@ class ViralBlaster(BaseBlaster):
                     blast['e_value'],
                     '%s/%s' % (blast['identity'], blast['align_len']), 100. * (blast['identity'] / blast['align_len'])
                 ])
+
+                with open(os.path.join(rdir, '%s.xml' % dicty['id'].replace('|', '_')), 'w') as fd:
+                    fd.write(blast['xml'])
 
 class rRNABlaster(BaseBlaster):
     BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastn'
@@ -189,5 +196,5 @@ def blast(data_file, Blaster):
 
 if __name__ == '__main__':
     #blast('dicty_primary_cds', GeneBlaster)
-    #blast('dicty_primary_protein', ViralBlaster)
-    blast('results/regex_lookup.fa', rRNABlaster)
+    blast('dicty_primary_protein', ViralBlaster)
+    #blast('results/regex_lookup.fa', rRNABlaster)
