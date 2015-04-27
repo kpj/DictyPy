@@ -151,8 +151,10 @@ class ViralBlaster(BaseBlaster):
                     '%s/%s' % (blast['identity'], blast['align_len']), 100. * (blast['identity'] / blast['align_len'])
                 ])
 
-                with open(os.path.join(rdir, '%s.xml' % dicty['id'].replace('|', '_')), 'w') as fd:
+                raw_name = dicty['id'].replace('|', '_')
+                with open(os.path.join(rdir, '%s.xml' % raw_name), 'w') as fd:
                     fd.write(blast['xml'])
+                os.system('xsltproc --novalid tools/blast2html.xsl "{name}.xml" > "{name}.xhtml"'.format(name=os.path.join(rdir, raw_name)))
 
 class rRNABlaster(BaseBlaster):
     BLAST_PATH = '/home/kpj/blast/ncbi-blast-2.2.30+-src/c++/ReleaseMT/bin/blastn'
