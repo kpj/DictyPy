@@ -1,12 +1,16 @@
 import os, os.path, re, subprocess, time
 import csv, json
 import xml.etree.ElementTree as ET
+import urllib.request
 
 from progressbar import ProgressBar
+from Bio import Entrez, SeqIO
 
 from fasta_parser import FastaParser
 from utils import extract_gene_name
 
+
+Entrez.email = "kpjkpjkpjkpjkpjkpj@gmail.com"
 
 class DefParser(object):
     def __init__(self, blast_def):
@@ -14,7 +18,34 @@ class DefParser(object):
 
     def get_virus_name(self):
         res = re.search(r'\[.*?\]', self.bdef)
-        return res.group()[1:-2].strip() if res is not None else self.bdef
+
+        if res is None:
+            return self._query_virus_name(self._get_accession(self.bdef))
+        else:
+            return res.group()[1:-2].strip()
+
+    def _query_virus_name(self, accession):
+        """ First ty to access information on some japanese server via the Genebank accession id (NCBI wants to send us mail if we excessively use their service). If that's not given try the GI id with NCBI.
+        """
+
+        url = 'http://getentry.ddbj.nig.ac.jp/getentry/dad/%s/?filetype=txt' % accession
+        content = urllib.request.urlopen(url).read().decode('utf-8')
+
+        res = re.search(r'SOURCE\s*(.*)', content)
+        if not res is None:
+            return res.group(1).strip()
+        else:
+            handle = Entrez.efetch(db='nucleotide', id='9626820', rettype='gb', retmode='text')
+            record = SeqIO.read(handle, 'genbank')
+            handle.close()
+
+            try:
+                return record.annotations['source']
+            except KeyError:
+                return 'unknown'
+
+    def _get_accession(self, bdef):
+        return bdef.split('|')[3].strip()
 
     def get_gi(self):
         return '|'.join(self.bdef.split('|')[:3])
