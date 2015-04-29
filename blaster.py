@@ -175,6 +175,14 @@ class rRNABlaster(BaseBlaster):
         iter_msg_box = blast_result.find('BlastOutput_iterations').find('Iteration').find('Iteration_message')
         if not iter_msg_box is None and iter_msg_box.text == 'No hits found': return []
 
+        iter_hits = blast_result.find('BlastOutput_iterations').find('Iteration').find('Iteration_hits')
+        for hit in iter_hits.findall('Hit'):
+            hsp = hit.find('Hit_hsps').find('Hsp')
+            e = hsp.find('Hsp_evalue').text
+
+            with open('e_values.dat', 'a') as fd:
+                fd.write(e + '\n')
+
         bstr = ET.tostring(blast_result, encoding='utf8', method='xml').decode('unicode_escape')
         return [(record, bstr)]
 
