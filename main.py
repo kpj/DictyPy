@@ -1,5 +1,7 @@
-import collections, json, os.path, subprocess
+import collections, csv, json, os.path, subprocess
 from pprint import pprint
+
+import numpy as np
 
 from fasta_parser import FastaParser
 from sequence_analyzer import DNAAnalyzer
@@ -51,12 +53,56 @@ def plot_grouped_genes():
     print('Plotting...')
     subprocess.check_call(['Rscript', 'plotter.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
+def save_to_csv():
+    aa_dict = {
+        'V': ['GTT', 'GTA', 'GTC', 'GTG'],
+        'A': ['GCT', 'GCC', 'GCG', 'GCA'],
+        'C': ['TGT', 'TGC'],
+        'Y': ['TAT', 'TAC'],
+        'W': ['TGG'],
+        'N': ['AAT', 'AAC'],
+        'T': ['ACT', 'ACC', 'ACG', 'ACA'],
+        'Q': ['CAG', 'CAA'],
+        'L': ['CTC', 'CTA', 'CTT', 'CTG', 'TTA', 'TTG'],
+        'S': ['AGC', 'TCT', 'TCC', 'TCG', 'AGT', 'TCA'],
+        'E': ['GAA', 'GAG'],
+        'R': ['CGC', 'CGA', 'CGT', 'AGG', 'CGG', 'AGA'],
+        'H': ['CAC', 'CAT'],
+        'F': ['TTC', 'TTT'],
+        'D': ['GAT', 'GAC'],
+        'M': ['ATG'],
+        'K': ['AAA', 'AAG'],
+        '*': ['TAG', 'TAA', 'TGA'],
+        'P': ['CCA', 'CCC', 'CCT', 'CCG'],
+        'I': ['ATT', 'ATC', 'ATA'],
+        'G': ['GGT', 'GGG', 'GGA', 'GGC'],
+    }
+
+    with open('results/grouped_genes.json', 'r') as fd:
+        content = json.load(fd)
+
+    with open('out.csv', 'w') as fd:
+        writer = csv.writer(fd)
+        writer.writerow(['group', 'amino_acid', 'codon', 'codon_usage'])
+
+        for entry in content:
+            group = entry['group']
+            cuco = entry['cumulative_codon_usage']
+
+            for aa, cods in aa_dict.items():
+                for c in cods:
+                    codu = np.mean(cuco[c])
+
+                    writer.writerow([group, aa, c, codu])
+
 def apply_procedure(Classifier):
     farser = FastaParser(Classifier.data_file)
     genes = farser.parse()
 
     group_genes(Classifier, genes, 'grouped_genes.json')
-    plot_grouped_genes()
+
+    #plot_grouped_genes()
+    save_to_csv()
 
 def main():
     apply_procedure(GeneNameClassifier)
