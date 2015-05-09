@@ -57,9 +57,9 @@ class BaseBlaster(object):
     DB_PATH = None
     EXTRA_BLAST_ARGS = []
 
-    def __init__(self, genes):
+    def __init__(self, genes, **kwargs):
         self.genes = genes
-        self.setup()
+        self.setup(**kwargs)
 
         # -qcov_hsp_perc
         self.blast_cmd = [
@@ -73,7 +73,7 @@ class BaseBlaster(object):
 
         print('Blasting with\n >', ' '.join(self.blast_cmd))
 
-    def setup(self):
+    def setup(self, **kwargs):
         pass
 
     def _handle_record(self, record, blast_result):
@@ -217,7 +217,7 @@ class rRNABlaster(BaseBlaster):
         bstr = ET.tostring(blast_result, encoding='utf8', method='xml').decode('unicode_escape')
         return [(record, bstr)]
 
-    def setup(self):
+    def setup(self, **kwargs):
         self.e_value_file = 'e_values.dat'
         self.xml_dump_dir = 'rRNA_XML_dump'
 
@@ -227,20 +227,28 @@ class rRNABlaster(BaseBlaster):
         if os.path.isdir(self.xml_dump_dir):
             shutil.rmtree(self.xml_dump_dir)
 
+        self.data_file = kwargs['data_file']
+
     def _finalize(self, data):
         if not os.path.isdir(self.xml_dump_dir):
             os.mkdir(self.xml_dump_dir)
 
+        # save XML dump
         for record, xml in data:
             with open(os.path.join(self.xml_dump_dir, '%s.xml' % record.id.replace('|', '_')), 'w') as fd:
                 fd.write(xml)
 
+        # plot e-value histogram
+        os.system('Rscript evalue_hist.R')
+        fname = os.path.splitext(self.data_file)[0]
+        os.rename('evalue_hist.png', '%s_evalue_histogram.png' % fname)
 
-def blast(data_file, Blaster):
-    farser = FastaParser(data_file)
+
+def blast(fname, Blaster, **kwargs):
+    farser = FastaParser(fname)
     genes = farser.parse()
 
-    blaster = Blaster(genes)
+    blaster = Blaster(genes, **kwargs)
     blaster.process()
 
 
