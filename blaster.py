@@ -1,4 +1,4 @@
-import os, os.path, re, subprocess, time
+import os, os.path, re, subprocess, time, shutil
 import csv, json
 import xml.etree.ElementTree as ET
 import urllib.request
@@ -211,19 +211,28 @@ class rRNABlaster(BaseBlaster):
             hsp = hit.find('Hit_hsps').find('Hsp')
             e = hsp.find('Hsp_evalue').text
 
-            with open('e_values.dat', 'a') as fd:
+            with open(self.e_value_file, 'a') as fd:
                 fd.write(e + '\n')
 
         bstr = ET.tostring(blast_result, encoding='utf8', method='xml').decode('unicode_escape')
         return [(record, bstr)]
 
+    def setup(self):
+        self.e_value_file = 'e_values.dat'
+        self.xml_dump_dir = 'rRNA_XML_dump'
+
+        if os.path.isfile(self.e_value_file):
+            os.remove(self.e_value_file)
+
+        if os.path.isdir(self.xml_dump_dir):
+            shutil.rmtree(self.xml_dump_dir)
+
     def _finalize(self, data):
-        rdir = 'rRNA_XML_dump'
-        if not os.path.isdir(rdir):
-            os.mkdir(rdir)
+        if not os.path.isdir(self.xml_dump_dir):
+            os.mkdir(self.xml_dump_dir)
 
         for record, xml in data:
-            with open(os.path.join(rdir, '%s.xml' % record.id.replace('|', '_')), 'w') as fd:
+            with open(os.path.join(self.xml_dump_dir, '%s.xml' % record.id.replace('|', '_')), 'w') as fd:
                 fd.write(xml)
 
 
