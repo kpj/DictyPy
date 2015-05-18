@@ -241,7 +241,12 @@ class rRNABlaster(BaseBlaster):
         # plot e-value histogram
         os.system('Rscript evalue_hist.R')
         fname = os.path.splitext(self.data_file)[0]
-        os.rename('evalue_hist.png', '%s_evalue_histogram.png' % fname)
+        for i in range(10):
+            # TODO: make this better
+            try:
+                os.rename('evalue_hist%d.png' % i, '%s_evalue_histogram%d.png' % (fname, i))
+            except FileNotFoundError:
+                pass
 
 
 def blast(fname, Blaster, **kwargs):
