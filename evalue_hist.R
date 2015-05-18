@@ -11,8 +11,8 @@ pair_vec[["2"]] <- list(threshold=0.1, binwidth=0.001)
 for(i in names(pair_vec)) {
     cur = pair_vec[[i]]
 
-    e.vals <- e.vals[e.vals<=cur$threshold]
-    df <- data.frame(e=e.vals)
+    tmp <- e.vals[e.vals<=cur$threshold]
+    df <- data.frame(e=tmp)
 
     if(length(df$e) == 0) {
         next
