@@ -36,13 +36,14 @@ class DefParser(object):
             return res.group(1).strip()
         else:
             handle = Entrez.efetch(db='nucleotide', id='9626820', rettype='gb', retmode='text')
-            record = SeqIO.read(handle, 'genbank')
-            handle.close()
 
             try:
+                record = SeqIO.read(handle, 'genbank')
                 return record.annotations['source']
-            except KeyError:
+            except (ValueError, KeyError) as e:
                 return 'unknown'
+            finally:
+                handle.close()
 
     def _get_accession(self, bdef):
         return bdef.split('|')[3].strip()
