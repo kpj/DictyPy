@@ -1,3 +1,7 @@
+"""
+Compute single/average/cumulaive codon usage for sequences
+"""
+
 import collections
 
 from Bio.SeqUtils import CodonUsage

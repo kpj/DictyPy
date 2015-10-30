@@ -91,6 +91,8 @@ def annotate_seq_records(genes, annotations):
             record_list.append(rec)
             processed_names.append(rec.id)
 
+    print(len(genes) - len(processed_names), '/', len(genes), 'annotated')
+
     # don't neglect entries which have no annotation
     for gene in genes:
         if not gene.id in processed_names:

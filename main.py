@@ -51,7 +51,7 @@ def group_genes(Classifier, genes, fname_out):
 
 def plot_grouped_genes():
     print('Plotting...')
-    subprocess.check_call(['Rscript', 'plotter.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.check_call(['Rscript', 'plotting/plotter.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def save_to_csv():
     aa_dict = {

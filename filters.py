@@ -44,6 +44,8 @@ class RTEFilter(BaseFilter):
 class LysineAbundanceFilter(BaseFilter):
     """ Only allow gene which code for more than 76.6 lysines if scaled to a length of 1000 bases
     """
+    skip = True
+
     def __init__(self):
         self.dnaa = DNAAnalyzer(strict=False)
 
