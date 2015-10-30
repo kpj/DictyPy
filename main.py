@@ -101,8 +101,8 @@ def apply_procedure(Classifier):
 
     group_genes(Classifier, genes, 'grouped_genes.json')
 
-    #plot_grouped_genes()
-    save_to_csv()
+    plot_grouped_genes()
+    #save_to_csv()
 
 def main():
     apply_procedure(GeneNameClassifier)

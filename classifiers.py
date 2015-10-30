@@ -1,3 +1,7 @@
+"""
+Define classifiers which return (multiple) groups related to a gene record
+"""
+
 import json, os.path
 
 from filters import *

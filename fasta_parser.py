@@ -1,3 +1,7 @@
+"""
+Parse FastA files
+"""
+
 import sys
 import os.path
 import collections
@@ -11,6 +15,8 @@ class FastaParser(object):
     DATA_DIR = 'data'
 
     def __init__(self, fname):
+        """ If `fname` is not found, look for it in `DATA_DIR` before failing
+        """
         if os.path.isfile(fname):
             full_path = fname
         else:
