@@ -1,5 +1,5 @@
 """
-Compute single/average/cumulaive codon usage for sequences
+Compute single/average/cumulative codon usage for sequences
 """
 
 import collections

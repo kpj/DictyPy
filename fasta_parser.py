@@ -1,5 +1,5 @@
 """
-Parse FastA files
+Parse FastA files and apply fitting filters
 """
 
 import sys

@@ -1,3 +1,7 @@
+"""
+Define filters for Sequence.record objects
+"""
+
 import json
 
 from Bio.SeqUtils import CodonUsage
