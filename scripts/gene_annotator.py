@@ -1,5 +1,8 @@
+import sys
+
 from selenium import webdriver
 from bs4 import BeautifulSoup
+from Bio import SeqIO
 
 import utils
 
@@ -42,3 +45,32 @@ class GeneAnnotator(object):
         soup = BeautifulSoup(content)
 
         return soup
+
+
+def load_gene_annotations(genes, fname):
+    """ Load gene annotations from the web
+    """
+    foo = {}
+    errors = 0
+    ganno = GeneAnnotator()
+    for gene in genes:
+        try:
+            anno = ganno.get_direct_annotation(gene)
+            foo[gene.id] = anno
+        except:
+            print('Error:', gene, '\n')
+            errors += 1
+    json.dump(foo, open(fname, 'w'))
+    print(errors, 'errors')
+
+def main():
+    if len(sys.argv) != 3:
+        print('Usage: %s <fasta file> <annotation output>' % sys.argv[0])
+        sys.exit()
+
+    genes = SeqIO.parse(sys.argv[1], format='fasta')
+
+    load_gene_annotations(genes, sys.argv[2])
+
+if __name__ == '__main__':
+    main()

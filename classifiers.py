@@ -2,7 +2,7 @@
 Define classifiers which return (multiple) groups related to a gene record
 """
 
-import json, os.path
+import sys, json, os.path
 
 from filters import *
 from utils import BaseClassifier, extract_gene_name, load_gene_annotations, annotate_seq_records
@@ -43,7 +43,8 @@ class GeneNameClassifier(BaseClassifier):
         fname = os.path.join(BaseClassifier.RESULTS_DIR, 'annotated_genes.json')
 
         if not os.path.isfile(fname):
-            load_gene_annotations(genes, fname)
+            print('[ERROR] no annotations available')
+            sys.exit(1)
 
         return annotate_seq_records(genes, json.load(open(fname, 'r')))
 
