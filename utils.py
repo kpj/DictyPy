@@ -1,4 +1,3 @@
-from gene_annotator import GeneAnnotator
 import utils
 
 
