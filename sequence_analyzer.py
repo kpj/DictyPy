@@ -57,6 +57,19 @@ class DNAAnalyzer(object):
 
         return dict(cum_codu)
 
+    def get_gene_codon_usages(self, genes):
+        """ Get codon usage for individual genes
+        """
+        gene_codu = {}
+        for gene in genes:
+            try:
+                codu = self.get_codon_usage(str(gene.seq))
+                gene_codu[gene] = codu
+            except TypeError as e:
+                print('invalid gene %s (%s)' % (gene.id, str(e)))
+
+        return gene_codu
+
     def get_codon_usage(self, seq):
         """ Calculate codon usage in given sequence
         """
