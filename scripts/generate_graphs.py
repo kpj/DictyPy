@@ -5,6 +5,8 @@ Generate some histograms related to codon usage and repetetive codon sequence le
 import sys, json, csv
 import subprocess, re
 
+import numpy as np
+
 sys.path.insert(0, '.') # evil hack for importing scripts from parent directory
 
 from fasta_parser import FastaParser
@@ -29,12 +31,16 @@ def handle_codon_usage(genes):
     data = dnana.get_gene_codon_usages(genes)
 
     plot_data = []
+    bin_width = 0.01
     for marker in ['AAA', 'GAA', 'CAA']:
         cur = {}
         usage = extract(marker, data)
 
         cur['marker'] = marker
-        cur['usage'] = usage
+
+        counts, edges = np.histogram(usage, bins=np.arange(0, 1+bin_width, bin_width))
+        cur['counts'] = counts.tolist()
+        cur['edges'] = edges.tolist()[1:]
 
         plot_data.append(cur)
     json.dump(plot_data, open('results/gene_codon_usages.json', 'w'))
@@ -105,9 +111,9 @@ def main():
     farser = FastaParser(sys.argv[1])
     genes = farser.parse()
 
-    #handle_codon_usage(genes)
+    handle_codon_usage(genes)
     #store_low_CAA_genes(genes)
-    find_longest_stretch(genes)
+    #find_longest_stretch(genes)
 
 
 if __name__ == '__main__':
