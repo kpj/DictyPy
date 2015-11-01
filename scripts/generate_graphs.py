@@ -46,7 +46,7 @@ def handle_codon_usage(genes):
     json.dump(plot_data, open('results/gene_codon_usages.json', 'w'))
 
     print('Plotting')
-    subprocess.check_call(['Rscript', 'plotting/histogram_maker.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.check_call(['Rscript', 'plotting/codon_usage_histogram_maker.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def store_low_CAA_genes(genes):
     """ Create list of genes where CAA usage < 0.9
