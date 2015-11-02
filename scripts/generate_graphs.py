@@ -3,9 +3,10 @@ Generate some histograms related to codon usage and repetetive codon sequence le
 """
 
 import sys, json, csv
-import subprocess, re
+import subprocess
 
 import numpy as np
+import regex as re
 
 sys.path.insert(0, '.') # evil hack for importing scripts from parent directory
 
@@ -96,11 +97,17 @@ def find_longest_stretch(genes):
     """ Find longest stretches
     """
     def get_longest_stretch(gene, codon):
-        """ Find longtest stretch in given gene
+        """ Find longest stretch in ORF of given gene
         """
         pat = re.compile(r'((?:' + codon + ')+)')
-        stretches = pat.findall(str(gene.seq))
-        longest = max(stretches, key=len) if len(stretches) > 0 else ''
+        stretches = pat.finditer(str(gene.seq), overlapped=True)
+
+        longest = ''
+        for stretch in stretches:
+            cur = stretch.group()
+            if stretch.start() % 3 == 0 and len(cur) > len(longest):
+                longest = cur
+
         return longest
 
     bin_width = 1
