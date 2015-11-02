@@ -79,11 +79,11 @@ class DNAAnalyzer(object):
         for gene in genes:
             seq = str(gene.seq)
             codon_count = self._count_codons(seq)
-            tot_cod_num = len(seq) / 3
+            tot_cod_num = len(seq) / 3.
             codon_count.update((cod, cou / tot_cod_num) for cod, cou in codon_count.items())
             counts.append(codon_count)
 
-        avg_counts = collections.defaultdict(int)
+        avg_counts = collections.defaultdict(float)
         for c in counts:
             for k, v in c.items():
                 avg_counts[k] += v
