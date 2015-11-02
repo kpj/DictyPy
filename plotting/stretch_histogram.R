@@ -17,6 +17,6 @@ for(cur in data) {
 ggplot(df, aes(x=edges, y=counts, fill=counts)) +
   geom_bar(stat="identity") +
   geom_text(aes(label=ifelse(counts == 0, "", counts), angle=90, hjust=-0.25), size=3) +
-  xlab("stretch length") +
+  xlab("codon number in stretch") +
   facet_grid(codon ~ .) +
   ggsave(filename=paste0("stretch_hist.png"), width=13)

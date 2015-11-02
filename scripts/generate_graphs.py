@@ -109,7 +109,7 @@ def find_longest_stretch(genes):
         stretch_lens = []
         for gene in genes:
             stretch = get_longest_stretch(gene, codon)
-            stretch_lens.append(len(stretch))
+            stretch_lens.append(len(stretch) / 3.)
 
         counts, edges = do_binning(stretch_lens, bin_width, bin_max=max(stretch_lens))
 
@@ -133,8 +133,8 @@ def main():
     genes = farser.parse()
 
     #handle_codon_usage(genes)
-    store_low_CAA_genes(genes)
-    #find_longest_stretch(genes)
+    #store_low_CAA_genes(genes)
+    find_longest_stretch(genes)
 
 
 if __name__ == '__main__':
