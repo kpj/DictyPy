@@ -70,6 +70,27 @@ class DNAAnalyzer(object):
 
         return gene_codu
 
+    def get_codon_freqs(self, genes):
+        """ Compute codon frequencies in given genes
+        """
+        # TODO: usa cma
+
+        counts = []
+        for gene in genes:
+            seq = str(gene.seq)
+            codon_count = self._count_codons(seq)
+            tot_cod_num = len(seq) / 3
+            codon_count.update((cod, cou / tot_cod_num) for cod, cou in codon_count.items())
+            counts.append(codon_count)
+
+        avg_counts = collections.defaultdict(int)
+        for c in counts:
+            for k, v in c.items():
+                avg_counts[k] += v
+        avg_counts.update((cod, s / len(counts)) for cod, s in avg_counts.items())
+
+        return avg_counts
+
     def get_codon_usage(self, seq):
         """ Calculate codon usage in given sequence
         """

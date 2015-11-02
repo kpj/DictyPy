@@ -37,3 +37,11 @@ class TestCodonUsage(TestCase):
         self.assertEqual(avg_codu['AAC'], None)
         self.assertEqual(round(avg_codu['TTT'], 3), round(0.5, 3))
         self.assertEqual(round(avg_codu['TTC'], 3), round(0.5, 3))
+
+    def test_codon_frequencies(self):
+        avg_cod_freqs = self.dnana.get_codon_freqs(self.genes)
+
+        self.assertEqual(round(avg_cod_freqs['AAA'], 3), 0.333)
+        self.assertEqual(round(avg_cod_freqs['AAG'], 3), 0.167)
+        self.assertEqual(round(avg_cod_freqs['TTT'], 3), 0.25)
+        self.assertEqual(round(avg_cod_freqs['TTC'], 3), 0.25)

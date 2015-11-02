@@ -62,25 +62,32 @@ def store_low_CAA_genes(genes):
     def compute_norm(gene, *args):
         """ Compute normalized occurrence frequency of aa
         """
-        res = dnana._count_codons(str(gene.seq))
-        aa = sum([res[blub] for blub in args])
-        norm = aa * 1000 / len(gene.seq)
+        all_codon_num = dnana._count_codons(str(gene.seq))
+        aa_num = sum([all_codon_num[codon] for codon in args])
+        norm = aa_num * 1000 / len(gene.seq)
         return norm
+
+    avg_codon_freqs = dnana.get_codon_freqs(genes)
+    print(
+        '  LYS freq: %f\n' % (avg_codon_freqs['AAA'] + avg_codon_freqs['AAG']) +
+        '  GLU freq: %f\n' % (avg_codon_freqs['GAA'] + avg_codon_freqs['GAG']) +
+        '  GLN freq: %f' % (avg_codon_freqs['CAA'] + avg_codon_freqs['CAG'])
+    )
 
     # filter for genes
     low_CAA_genes = []
     for gene, codu in data.items():
         if not codu['CAA'] is None and codu['CAA'] < 0.9:
-            lys_freq = compute_norm(gene, 'AAA', 'AAG')
-            glu_freq = compute_norm(gene, 'GAA', 'GAG')
-            gln_freq = compute_norm(gene, 'CAA', 'CAG')
+            lys_freq = (compute_norm(gene, 'AAA', 'AAG') / 1000) / (avg_codon_freqs['AAA'] + avg_codon_freqs['AAG'])
+            glu_freq = (compute_norm(gene, 'GAA', 'GAG') / 1000) / (avg_codon_freqs['GAA'] + avg_codon_freqs['GAG'])
+            gln_freq = (compute_norm(gene, 'CAA', 'CAG') / 1000) / (avg_codon_freqs['CAA'] + avg_codon_freqs['CAG'])
 
             low_CAA_genes.append((gene.id, extract_gene_name(gene), lys_freq, codu['AAA'], glu_freq, codu['GAA'], gln_freq, codu['CAA']))
 
     # store results
     with open('results/low_CAA_genes.csv', 'w') as fd:
         wrtr = csv.writer(fd)
-        wrtr.writerow(['ID', 'name', 'LYS freq', 'CU: AAA', 'GLU freq', 'CU: GAA', 'GLN freq', 'CU: CAA'])
+        wrtr.writerow(['ID', 'name', 'LYS rel freq', 'CU: AAA', 'GLU rel freq', 'CU: GAA', 'GLN rel freq', 'CU: CAA'])
 
         for entry in low_CAA_genes:
             wrtr.writerow(entry)
@@ -126,8 +133,8 @@ def main():
     genes = farser.parse()
 
     #handle_codon_usage(genes)
-    #store_low_CAA_genes(genes)
-    find_longest_stretch(genes)
+    store_low_CAA_genes(genes)
+    #find_longest_stretch(genes)
 
 
 if __name__ == '__main__':
