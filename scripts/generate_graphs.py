@@ -14,6 +14,12 @@ from sequence_analyzer import DNAAnalyzer
 from utils import extract_gene_name
 
 
+def do_binning(data, bin_width, bin_max=1):
+    """ Bin data
+    """
+    counts, edges = np.histogram(data, bins=np.arange(0, bin_max+bin_width, bin_width))
+    return counts.tolist(), edges.tolist()[1:]
+
 def handle_codon_usage(genes):
     """ Generate codon usage histograms
     """
@@ -37,10 +43,7 @@ def handle_codon_usage(genes):
         usage = extract(marker, data)
 
         cur['marker'] = marker
-
-        counts, edges = np.histogram(usage, bins=np.arange(0, 1+bin_width, bin_width))
-        cur['counts'] = counts.tolist()
-        cur['edges'] = edges.tolist()[1:]
+        cur['counts'], cur['edges'] = do_binning(usage, bin_width)
 
         plot_data.append(cur)
     json.dump(plot_data, open('results/gene_codon_usages.json', 'w'))
@@ -93,16 +96,27 @@ def find_longest_stretch(genes):
         longest = max(stretches, key=len) if len(stretches) > 0 else ''
         return longest
 
-    data = {'aaa_len': [], 'caa_len': []}
-    for gene in genes:
-        aaa_stretch = get_longest_stretch(gene, r'AAA')
-        caa_stretch = get_longest_stretch(gene, r'CAA')
+    bin_width = 1
+    data = []
+    for codon in ['AAA', 'CAA']:
+        stretch_lens = []
+        for gene in genes:
+            stretch = get_longest_stretch(gene, codon)
+            stretch_lens.append(len(stretch))
 
-        data['aaa_len'].append(len(aaa_stretch))
-        data['caa_len'].append(len(caa_stretch))
+        counts, edges = do_binning(stretch_lens, bin_width, bin_max=max(stretch_lens))
+
+        data.append({
+            'codon': codon,
+            'counts': counts,
+            'edges': edges
+        })
 
     with open('results/longest_stretches.json', 'w') as fd:
         json.dump(data, fd)
+
+    print('Plotting')
+    subprocess.check_call(['Rscript', 'plotting/stretch_histogram.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def main():
@@ -111,9 +125,9 @@ def main():
     farser = FastaParser(sys.argv[1])
     genes = farser.parse()
 
-    handle_codon_usage(genes)
+    #handle_codon_usage(genes)
     #store_low_CAA_genes(genes)
-    #find_longest_stretch(genes)
+    find_longest_stretch(genes)
 
 
 if __name__ == '__main__':
