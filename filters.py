@@ -20,8 +20,6 @@ class LengthFilter(BaseFilter):
 class MultipleStopCodonFilter(BaseFilter):
     """ Skip all sequences which contain more than one STOP codon
     """
-    skip = True
-
     def __init__(self):
         self.stop_codons = CodonUsage.SynonymousCodons['STOP']
 
@@ -46,8 +44,6 @@ class RTEFilter(BaseFilter):
 class LysineAbundanceFilter(BaseFilter):
     """ Only allow gene which code for more than 76.6 lysines if scaled to a length of 1000 bases
     """
-    skip = True
-
     def __init__(self):
         self.dnaa = DNAAnalyzer(strict=False)
 

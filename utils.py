@@ -5,7 +5,7 @@ class BaseFilter(object):
     """ Base class of every filter.
         Filters are the first measure to reduce the amount of data processed by this program and are executed on every entry present in the given fasta file. They should thus not be too resource intensive.
     """
-    skip = False
+    skip = True
     post_annotation = False # apply this filter after annotation step
 
     def apply(self):
