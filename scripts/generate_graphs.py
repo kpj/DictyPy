@@ -96,31 +96,30 @@ def store_low_CAA_genes(genes):
 def find_longest_stretch(genes):
     """ Generate 2D-Histogram of stretch length and relative position in gene
     """
-    def get_longest_stretch(gene, codon):
-        """ Find longest stretch in ORF of given gene and relative position
+    def get_stretches(gene, codon):
+        """ Find stretches in ORF of given gene and relative position
         """
         pat = re.compile(r'((?:' + codon + ')+)')
         stretches = pat.finditer(str(gene.seq), overlapped=True)
 
-        longest = ''
-        longest_pos = -1
+        strtchs = []
+        pstns = []
         for stretch in stretches:
-            cur = stretch.group()
-            if stretch.start() % 3 == 0 and len(cur) > len(longest):
-                longest = cur
-                longest_pos = stretch.start() / len(gene.seq)
+            if stretch.start() % 3 == 0:
+                strtchs.append(stretch.group())
+                pstns.append(stretch.start() / len(gene.seq))
 
-        return longest, longest_pos
+        return strtchs, pstns
 
     data = []
-    for codon in ['AAA', 'CAA']:
+    for codon in ['AAA', 'CAA', 'AAT']:
         stretch_lens = []
         stretch_pos = []
 
         for gene in genes:
-            stretch, rel_pos = get_longest_stretch(gene, codon)
-            stretch_lens.append(len(stretch) / 3.)
-            stretch_pos.append(rel_pos)
+            stretches, rel_pos = get_stretches(gene, codon)
+            stretch_lens.extend([len(stretch) / 3. for stretch in stretches])
+            stretch_pos.extend(rel_pos)
 
         # make 2D-Histogram
         xedges = np.arange(0, max(stretch_lens)+1, 1)
