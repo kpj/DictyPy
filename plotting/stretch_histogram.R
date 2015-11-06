@@ -8,15 +8,17 @@ fname <- "results/longest_stretches.json"
 data <- fromJSON(file=fname, method='C')
 
 # preprocess data
-df <- data.frame(codon=numeric(0), counts=numeric(0), edges=numeric(0))
+df <- data.frame()
 for(cur in data) {
-  df <- rbind(df, data.frame(codon=cur$codon, counts=cur$counts, edges=cur$edges))
+  for(entry in cur$data) {
+    df <- rbind(df, data.frame(codon=cur$codon, x_pos=entry$x, y_pos=entry$y, count=entry$z))
+  }
 }
 
 # plot data
-ggplot(df, aes(x=edges, y=counts, fill=counts)) +
-  geom_bar(stat="identity") +
-  geom_text(aes(label=ifelse(counts == 0, "", counts), angle=90, hjust=-0.25), size=3) +
+ggplot(df, aes(x=x_pos, y=y_pos)) +
+  geom_raster(aes(fill=count)) +
   xlab("codon number in stretch") +
+  ylab("relative stretch position in gene") +
   facet_grid(codon ~ .) +
   ggsave(filename=paste0("stretch_hist.png"), width=13)

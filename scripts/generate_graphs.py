@@ -94,36 +94,53 @@ def store_low_CAA_genes(genes):
             wrtr.writerow(entry)
 
 def find_longest_stretch(genes):
-    """ Find longest stretches
+    """ Generate 2D-Histogram of stretch length and relative position in gene
     """
     def get_longest_stretch(gene, codon):
-        """ Find longest stretch in ORF of given gene
+        """ Find longest stretch in ORF of given gene and relative position
         """
         pat = re.compile(r'((?:' + codon + ')+)')
         stretches = pat.finditer(str(gene.seq), overlapped=True)
 
         longest = ''
+        longest_pos = -1
         for stretch in stretches:
             cur = stretch.group()
             if stretch.start() % 3 == 0 and len(cur) > len(longest):
                 longest = cur
+                longest_pos = stretch.start() / len(gene.seq)
 
-        return longest
+        return longest, longest_pos
 
-    bin_width = 1
     data = []
     for codon in ['AAA', 'CAA']:
         stretch_lens = []
-        for gene in genes:
-            stretch = get_longest_stretch(gene, codon)
-            stretch_lens.append(len(stretch) / 3.)
+        stretch_pos = []
 
-        counts, edges = do_binning(stretch_lens, bin_width, bin_max=max(stretch_lens))
+        for gene in genes:
+            stretch, rel_pos = get_longest_stretch(gene, codon)
+            stretch_lens.append(len(stretch) / 3.)
+            stretch_pos.append(rel_pos)
+
+        # make 2D-Histogram
+        xedges = np.arange(0, max(stretch_lens)+1, 1)
+        yedges = np.arange(0, 1+0.01, 0.01)
+
+        counts, xedges, yedges = np.histogram2d(stretch_lens, stretch_pos, bins=(xedges, yedges))
+        xedges, yedges = xedges[1:], yedges[1:]
+
+        coords = []
+        for i, xe in enumerate(xedges):
+            for j, ye in enumerate(yedges):
+                coords.append({
+                    'x': xe,
+                    'y': ye,
+                    'z': counts[i, j]
+                })
 
         data.append({
             'codon': codon,
-            'counts': counts,
-            'edges': edges
+            'data': coords
         })
 
     with open('results/longest_stretches.json', 'w') as fd:
