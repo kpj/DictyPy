@@ -48,17 +48,15 @@ def group_expression_levels(genes, exprs):
         ('weak', 0.3),
         ('middle', 0.6),
         ('strong', 0.9),
-        ('highest', 1)
+        ('highest', float('inf'))
     ]
 
     groups = collections.defaultdict(list)
-    parsed_num = len(genes)
     for gene in genes:
         try:
             name = gene.id.split('|')[1]
             expr = exprs[name]
         except (IndexError, KeyError):
-            parsed_num -= 1
             continue
 
         for label, thres in group_spec:
@@ -66,7 +64,7 @@ def group_expression_levels(genes, exprs):
                 groups[label].append(gene)
                 break
 
-    print(parsed_num, '/', len(genes), 'genes parsed')
+    print(sum([len(foo) for foo in groups.values()]), '/', len(genes), 'genes grouped')
     for k, v in groups.items(): print(' ', k, '->', len(v))
 
     return dict(groups)
