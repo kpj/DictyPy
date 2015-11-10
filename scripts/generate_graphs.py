@@ -46,6 +46,7 @@ def parse_stretches(gene, stretches, info_func):
     """ Extract information from stretches.
         `info_func(gene, stretch)` defines what further information should be extracted
     """
+    # sorted stretches by length
     tmp = []
     for stretch in stretches:
         tmp.append((
@@ -58,7 +59,7 @@ def parse_stretches(gene, stretches, info_func):
     frthr_nfs = []
     used_intervals = []
     for slen, stretch in tmp:
-        # check that we're not in substring of something
+        # skip if currently in substretch of larger stretch
         skip = False
         for s, e in used_intervals:
             if stretch.start() > s and stretch.start() < e:
@@ -66,10 +67,11 @@ def parse_stretches(gene, stretches, info_func):
                 break
         if skip: continue
 
-        if stretch.start() % 3 == 0:
+        if stretch.start() % 3 == 0: # only consider codons in ORF
             strtchs.append(stretch.group())
             frthr_nfs.append(info_func(gene, stretch))
 
+            # save stretch position and length
             used_intervals.append(
                 (stretch.start(), stretch.start()+len(stretch.group()))
             )
