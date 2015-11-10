@@ -42,6 +42,41 @@ def do_2d_binning(x_data, y_data, x_bin_width, y_bin_width, x_bin_max, y_bin_max
 
     return coords
 
+def parse_stretches(gene, stretches, info_func):
+    """ Extract information from stretches.
+        `info_func(gene, stretch)` defines what further information should be extracted
+    """
+    tmp = []
+    for stretch in stretches:
+        tmp.append((
+            len(stretch.group()),
+            stretch
+        ))
+    tmp = reversed(sorted(tmp, key=lambda e: e[0]))
+
+    strtchs = []
+    frthr_nfs = []
+    used_intervals = []
+    for slen, stretch in tmp:
+        # check that we're not in substring of something
+        skip = False
+        for s, e in used_intervals:
+            if stretch.start() > s and stretch.start() < e:
+                skip = True
+                break
+        if skip: continue
+
+        if stretch.start() % 3 == 0:
+            strtchs.append(stretch.group())
+            frthr_nfs.append(info_func(gene, stretch))
+
+            used_intervals.append(
+                (stretch.start(), stretch.start()+len(stretch.group()))
+            )
+
+    return strtchs, frthr_nfs
+
+
 def handle_codon_usage(genes):
     """ Generate codon usage histograms
     """
@@ -123,14 +158,11 @@ def stretch_pos_histogram(genes):
         pat = re.compile(r'((?:' + codon + ')+)')
         stretches = pat.finditer(str(gene.seq), overlapped=True)
 
-        strtchs = []
-        pstns = []
-        for stretch in stretches:
-            if stretch.start() % 3 == 0:
-                strtchs.append(stretch.group())
-                pstns.append(stretch.start() / len(gene.seq))
-
-        return strtchs, pstns
+        return parse_stretches(
+            gene, stretches,
+            lambda gene, stretch:
+                stretch.start() / len(gene.seq)
+        )
 
     data = []
     for codon in ['AAA', 'CAA', 'AAT']:
@@ -172,37 +204,11 @@ def stretch_codu_histogram(genes):
         pat = re.compile(r'((?:' + cods + ')+)')
         stretches = pat.finditer(str(gene.seq), overlapped=True)
 
-        tmp = []
-        for stretch in stretches:
-            tmp.append((
-                len(stretch.group()),
-                stretch
-            ))
-        tmp = reversed(sorted(tmp, key=lambda e: e[0]))
-
-        strtchs = []
-        codus = []
-        used_intervals = []
-        for slen, stretch in tmp:
-            # check that we're not in substring of something
-            skip = False
-            for s, e in used_intervals:
-                if stretch.start() > s and stretch.start() < e:
-                    skip = True
-            if skip: continue
-
-            if stretch.start() % 3 == 0:
-                seq = stretch.group()
-
-                strtchs.append(seq)
-                cu = dnana.get_codon_usage(seq)
-                codus.append(cu[codons[0]])
-
-                used_intervals.append(
-                    (stretch.start(), stretch.start()+len(seq))
-                )
-
-        return strtchs, codus
+        return parse_stretches(
+            gene, stretches,
+            lambda gene, stretch:
+                dnana.get_codon_usage(stretch.group())[codons[0]]
+        )
 
     data = []
     for codon_pair in [('CAA', 'CAG'), ('AAA', 'AAG')]:
