@@ -160,6 +160,78 @@ def stretch_pos_histogram(genes):
     print('Plotting')
     subprocess.check_call(['Rscript', 'plotting/stretch_histogram.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
+def stretch_codu_histogram(genes):
+    """ Generate 2D histogram of stretch length versus codon usage
+    """
+    dnana = DNAAnalyzer()
+
+    def get_stretches(gene, codons):
+        """ Find stretches in ORF of given gene and codon usage
+        """
+        cods = '|'.join(['(?:%s)' % c for c in codons])
+        pat = re.compile(r'((?:' + cods + ')+)')
+        stretches = pat.finditer(str(gene.seq), overlapped=True)
+
+        tmp = []
+        for stretch in stretches:
+            tmp.append((
+                len(stretch.group()),
+                stretch
+            ))
+        tmp = reversed(sorted(tmp, key=lambda e: e[0]))
+
+        strtchs = []
+        codus = []
+        used_intervals = []
+        for slen, stretch in tmp:
+            # check that we're not in substring of something
+            skip = False
+            for s, e in used_intervals:
+                if stretch.start() > s and stretch.start() < e:
+                    skip = True
+            if skip: continue
+
+            if stretch.start() % 3 == 0:
+                seq = stretch.group()
+
+                strtchs.append(seq)
+                cu = dnana.get_codon_usage(seq)
+                codus.append(cu[codons[0]])
+
+                used_intervals.append(
+                    (stretch.start(), stretch.start()+len(seq))
+                )
+
+        return strtchs, codus
+
+    data = []
+    for codon_pair in [('CAA', 'CAG'), ('AAA', 'AAG')]:
+        stretch_lens = []
+        stretch_codus = []
+
+        for gene in genes:
+            stretches, codu = get_stretches(gene, codon_pair)
+            stretch_lens.extend([len(stretch) / 3. for stretch in stretches])
+            stretch_codus.extend(codu)
+
+        # make 2D-Histogram
+        coords = do_2d_binning(
+            stretch_lens, stretch_codus,
+            1, 0.01,
+            max(stretch_lens), 1
+        )
+
+        data.append({
+            'codon': ','.join(codon_pair),
+            'data': coords
+        })
+
+    with open('results/longest_stretches.json', 'w') as fd:
+        json.dump(data, fd)
+
+    print('Plotting')
+    subprocess.check_call(['Rscript', 'plotting/stretch_histogram2.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
 
 def main():
     """ Read and extract data
@@ -170,6 +242,7 @@ def main():
     #handle_codon_usage(genes)
     #store_low_CAA_genes(genes)
     #stretch_pos_histogram(genes)
+    stretch_codu_histogram(genes)
 
 
 if __name__ == '__main__':
