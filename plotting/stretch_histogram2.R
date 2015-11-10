@@ -21,4 +21,4 @@ ggplot(df, aes(x=x_pos, y=y_pos)) +
   xlab("codon number in stretch") +
   ylab("codon usage") +
   facet_grid(codon ~ .) +
-  ggsave(filename=paste0("stretch_hist.png"), width=13)
+  ggsave(filename=paste0("stretch_codu_hist.png"), width=13)

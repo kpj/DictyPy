@@ -21,4 +21,4 @@ ggplot(df, aes(x=x_pos, y=y_pos)) +
   xlab("codon number in stretch") +
   ylab("relative stretch position in gene") +
   facet_grid(codon ~ .) +
-  ggsave(filename=paste0("stretch_hist.png"), width=13)
+  ggsave(filename=paste0("stretch_pos_hist.png"), width=13)

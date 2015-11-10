@@ -21,7 +21,11 @@ def do_binning(data, bin_width, bin_max=1):
     counts, edges = np.histogram(data, bins=np.arange(0, bin_max+bin_width, bin_width))
     return counts.tolist(), edges.tolist()[1:]
 
-def do_2d_binning(x_data, y_data, x_bin_width, y_bin_width, x_bin_max, y_bin_max):
+def do_2d_binning(
+    x_data, y_data,
+    x_bin_width, y_bin_width,
+    x_bin_max, y_bin_max
+):
     """ Bin data in two dimensions and return resulting coordinate list
     """
     # make 2D-Histogram
@@ -55,6 +59,7 @@ def parse_stretches(gene, stretches, info_func):
         ))
     tmp = reversed(sorted(tmp, key=lambda e: e[0]))
 
+    # extract information
     strtchs = []
     frthr_nfs = []
     used_intervals = []
@@ -105,10 +110,13 @@ def handle_codon_usage(genes):
         cur['counts'], cur['edges'] = do_binning(usage, bin_width)
 
         plot_data.append(cur)
+
     json.dump(plot_data, open('results/gene_codon_usages.json', 'w'))
 
     print('Plotting')
-    subprocess.check_call(['Rscript', 'plotting/codon_usage_histogram_maker.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.check_call([
+        'Rscript', 'plotting/codon_usage_histogram_maker.R'
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def store_low_CAA_genes(genes):
     """ Create list of genes where CAA usage < 0.9
@@ -192,7 +200,9 @@ def stretch_pos_histogram(genes):
         json.dump(data, fd)
 
     print('Plotting')
-    subprocess.check_call(['Rscript', 'plotting/stretch_histogram.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.check_call([
+        'Rscript', 'plotting/stretch_histogram.R'
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def stretch_codu_histogram(genes):
     """ Generate 2D histogram of stretch length versus codon usage
@@ -213,7 +223,7 @@ def stretch_codu_histogram(genes):
         )
 
     data = []
-    for codon_pair in [('CAA', 'CAG'), ('AAA', 'AAG')]:
+    for codon_pair in [('CAA', 'CAG'), ('AAA', 'AAG'), ('AAT', 'AAC')]:
         stretch_lens = []
         stretch_codus = []
 
@@ -238,7 +248,9 @@ def stretch_codu_histogram(genes):
         json.dump(data, fd)
 
     print('Plotting')
-    subprocess.check_call(['Rscript', 'plotting/stretch_histogram2.R'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.check_call([
+        'Rscript', 'plotting/stretch_histogram2.R'
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def main():
