@@ -21,6 +21,27 @@ def do_binning(data, bin_width, bin_max=1):
     counts, edges = np.histogram(data, bins=np.arange(0, bin_max+bin_width, bin_width))
     return counts.tolist(), edges.tolist()[1:]
 
+def do_2d_binning(x_data, y_data, x_bin_width, y_bin_width, x_bin_max, y_bin_max):
+    """ Bin data in two dimensions and return resulting coordinate list
+    """
+    # make 2D-Histogram
+    xedges = np.arange(0, x_bin_max+x_bin_width, x_bin_width)
+    yedges = np.arange(0, y_bin_max+y_bin_width, y_bin_width)
+
+    counts, xedges, yedges = np.histogram2d(x_data, y_data, bins=(xedges, yedges))
+    xedges, yedges = xedges[1:], yedges[1:]
+
+    coords = []
+    for i, xe in enumerate(xedges):
+        for j, ye in enumerate(yedges):
+            coords.append({
+                'x': xe,
+                'y': ye,
+                'z': counts[i, j]
+            })
+
+    return coords
+
 def handle_codon_usage(genes):
     """ Generate codon usage histograms
     """
@@ -93,7 +114,7 @@ def store_low_CAA_genes(genes):
         for entry in low_CAA_genes:
             wrtr.writerow(entry)
 
-def find_longest_stretch(genes):
+def stretch_pos_histogram(genes):
     """ Generate 2D-Histogram of stretch length and relative position in gene
     """
     def get_stretches(gene, codon):
@@ -122,20 +143,11 @@ def find_longest_stretch(genes):
             stretch_pos.extend(rel_pos)
 
         # make 2D-Histogram
-        xedges = np.arange(0, max(stretch_lens)+1, 1)
-        yedges = np.arange(0, 1+0.01, 0.01)
-
-        counts, xedges, yedges = np.histogram2d(stretch_lens, stretch_pos, bins=(xedges, yedges))
-        xedges, yedges = xedges[1:], yedges[1:]
-
-        coords = []
-        for i, xe in enumerate(xedges):
-            for j, ye in enumerate(yedges):
-                coords.append({
-                    'x': xe,
-                    'y': ye,
-                    'z': counts[i, j]
-                })
+        coords = do_2d_binning(
+            stretch_lens, stretch_pos,
+            1, 0.01,
+            max(stretch_lens), 1
+        )
 
         data.append({
             'codon': codon,
@@ -157,7 +169,7 @@ def main():
 
     #handle_codon_usage(genes)
     #store_low_CAA_genes(genes)
-    find_longest_stretch(genes)
+    #stretch_pos_histogram(genes)
 
 
 if __name__ == '__main__':
