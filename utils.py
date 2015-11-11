@@ -1,3 +1,5 @@
+import numpy as np
+
 import utils
 
 
@@ -99,3 +101,28 @@ def annotate_seq_records(genes, annotations):
             record_list.append(gene)
 
     return record_list
+
+def do_2d_binning(
+    x_data, y_data,
+    x_bin_width, y_bin_width,
+    x_bin_max, y_bin_max
+):
+    """ Bin data in two dimensions and return resulting coordinate list
+    """
+    # make 2D-Histogram
+    xedges = np.arange(0, x_bin_max+x_bin_width, x_bin_width)
+    yedges = np.arange(0, y_bin_max+y_bin_width, y_bin_width)
+
+    counts, xedges, yedges = np.histogram2d(x_data, y_data, bins=(xedges, yedges))
+    xedges, yedges = xedges[1:], yedges[1:]
+
+    coords = []
+    for i, xe in enumerate(xedges):
+        for j, ye in enumerate(yedges):
+            coords.append({
+                'x': xe,
+                'y': ye,
+                'z': counts[i, j]
+            })
+
+    return coords

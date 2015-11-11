@@ -12,7 +12,7 @@ sys.path.insert(0, '.') # evil hack for importing scripts from parent directory
 
 from fasta_parser import FastaParser
 from sequence_analyzer import DNAAnalyzer
-from utils import extract_gene_name
+from utils import extract_gene_name, do_2d_binning
 
 
 def do_binning(data, bin_width, bin_max=1):
@@ -20,31 +20,6 @@ def do_binning(data, bin_width, bin_max=1):
     """
     counts, edges = np.histogram(data, bins=np.arange(0, bin_max+bin_width, bin_width))
     return counts.tolist(), edges.tolist()[1:]
-
-def do_2d_binning(
-    x_data, y_data,
-    x_bin_width, y_bin_width,
-    x_bin_max, y_bin_max
-):
-    """ Bin data in two dimensions and return resulting coordinate list
-    """
-    # make 2D-Histogram
-    xedges = np.arange(0, x_bin_max+x_bin_width, x_bin_width)
-    yedges = np.arange(0, y_bin_max+y_bin_width, y_bin_width)
-
-    counts, xedges, yedges = np.histogram2d(x_data, y_data, bins=(xedges, yedges))
-    xedges, yedges = xedges[1:], yedges[1:]
-
-    coords = []
-    for i, xe in enumerate(xedges):
-        for j, ye in enumerate(yedges):
-            coords.append({
-                'x': xe,
-                'y': ye,
-                'z': counts[i, j]
-            })
-
-    return coords
 
 def parse_stretches(gene, stretches, info_func):
     """ Extract information from stretches.
