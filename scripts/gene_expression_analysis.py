@@ -64,7 +64,6 @@ def group_expression_levels(genes, exprs):
                 groups[label].append(gene)
 
     for k, v in groups.items(): print(' ', k, '->', len(v))
-
     return dict(groups)
 
 def generate_codon_usage_summary(groups, out_fname):
