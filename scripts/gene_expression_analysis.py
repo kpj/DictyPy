@@ -44,11 +44,11 @@ def group_expression_levels(genes, exprs):
     """
     # [(label, expr_threshold)]
     group_spec = [
-        ('lowest', 0.1),
-        ('weak', 0.3),
-        ('middle', 0.6),
-        ('strong', 0.9),
-        ('highest', float('inf'))
+        ('lowest', (0.0, 0.1)),
+        ('weak', (0.0, 0.3)),
+        ('middle', (0.3, 0.6)),
+        ('strong', (0.6, float('inf'))),
+        ('highest', (0.9, float('inf')))
     ]
 
     groups = collections.defaultdict(list)
@@ -59,12 +59,10 @@ def group_expression_levels(genes, exprs):
         except (IndexError, KeyError):
             continue
 
-        for label, thres in group_spec:
-            if expr < thres:
+        for label, (min_thres, max_thres) in group_spec:
+            if expr >= min_thres and expr <= max_thres:
                 groups[label].append(gene)
-                break
 
-    print(sum([len(foo) for foo in groups.values()]), '/', len(genes), 'genes grouped')
     for k, v in groups.items(): print(' ', k, '->', len(v))
 
     return dict(groups)
