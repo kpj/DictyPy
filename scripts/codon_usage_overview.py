@@ -20,7 +20,7 @@ def output_data(group_codu, out_stream=sys.stdout):
         """ Format codon usage float according to header
         """
         if codu is None:
-            return 'none'
+            return '-' * len(head)
         else:
             flt = '{:.{width}f}'.format(codu, width=len(head)-2)
             return flt
