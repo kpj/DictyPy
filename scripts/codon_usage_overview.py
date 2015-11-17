@@ -4,6 +4,7 @@ Print table with simple codon usage overview
 
 import sys
 
+import numpy as np
 from Bio.SeqUtils import CodonUsage
 
 sys.path.insert(0, '.')
@@ -28,6 +29,17 @@ def output_data(group_codu, out_stream=sys.stdout):
     labels = sorted(group_codu.keys())
     space = '   '
 
+    # add variance of row as element in last column
+    if len(labels) > 1:
+        variance_label = 'row variance'
+        group_codu[variance_label] = {}
+        for aa, codons in sorted(CodonUsage.SynonymousCodons.items()):
+            for c in codons:
+                vari = np.var([group_codu[l][c] for l in labels])
+                group_codu[variance_label][c] = vari
+        labels.append(variance_label)
+
+    # save output and save it to stream
     for aa, codons in sorted(CodonUsage.SynonymousCodons.items()):
         out_stream.write(space.join([aa] + labels) + '\n')
         for c in codons:
