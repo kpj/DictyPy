@@ -37,3 +37,10 @@ class TestMethods(TestCase):
         self.assertIn({'x': 4.5, 'y': 2.5, 'z': 3.0}, coords)
         for i, y in enumerate(np.arange(0.5, 5.5, 0.5)):
             self.assertEqual(coords[i], {'x': 0.5, 'y': y, 'z': 0.0})
+
+    def test_find_all_positions(self):
+        pos = utils.find_all_positions('AAAA', 'AA')
+        self.assertEqual(pos, [0, 2])
+
+        pos = utils.find_all_positions('AGAAAGAAAAAA', 'AAA', force_orf=True)
+        self.assertEqual(pos, [6, 9])

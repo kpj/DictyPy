@@ -124,3 +124,17 @@ def do_2d_binning(
             })
 
     return coords
+
+def find_all_positions(string, substring, force_orf=False):
+    """ Find all codon positions in gene
+    """
+    index = 0
+    pos = []
+    while index < len(string):
+        index = string.find(substring, index)
+        if index == -1:
+            break
+        if not force_orf or index % 3 == 0:
+            pos.append(index)
+        index += len(substring)
+    return pos
