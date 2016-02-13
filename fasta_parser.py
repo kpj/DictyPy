@@ -31,6 +31,7 @@ class FastaParser(object):
         """
         filter_stats = collections.defaultdict(int)
         data = []
+        cod_lens = []
         rec_num = 0
         for r in self.records:
             rec_num += 1
@@ -43,10 +44,18 @@ class FastaParser(object):
             if skip: continue
 
             data.append(r)
+            cod_lens.append(len(r.seq)/3)
 
         print('%d entries parsed' % rec_num)
-        if len(filter_stats) > 0: print('Pre-Annotation filters:')
-        for k, v in filter_stats.items(): print(' ', k, '->', v)
+        if len(filter_stats) > 0:
+            print('Pre-Annotation filters:')
+            for k, v in filter_stats.items():
+                print(' ', k, '->', v)
+        else:
+            print(' ', 'No filters applied')
 
         print('%d entries remaining' % len(data))
+        print(' > min/avg/max gene length:', '%d/%d/%d' % \
+            (min(cod_lens), sum(cod_lens)/len(cod_lens), max(cod_lens)))
+
         return data
