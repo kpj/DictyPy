@@ -7,6 +7,8 @@ import itertools
 import collections
 
 from Bio.SeqUtils import CodonUsage
+
+import numpy as np
 import matplotlib.pylab as plt
 
 sys.path.insert(0, '.')
@@ -32,7 +34,7 @@ def get_codon_positions(codons, genes):
     for g in genes:
         for c in codons:
             pos = find_all_positions(str(g.seq), c, force_orf=True)
-            res[c].extend(pos)
+            res[c].extend([p/len(g.seq) for p in pos])
     return res
 
 def plot_positions(positions):
@@ -41,12 +43,14 @@ def plot_positions(positions):
     pos = list(itertools.chain(*positions))
 
     n, bins, patches = plt.hist(
-        pos, 100,
+        pos, np.arange(0, 1, 0.25),
         facecolor='khaki')
 
     plt.title('Rare codon position overview')
-    plt.xlabel('relative nucleotide position in gene')
+    plt.xlabel('relative position in gene')
     plt.ylabel('count')
+
+    plt.xlim((0, 1))
 
     plt.savefig('rarest_codon_positions.pdf')
     #plt.show()
