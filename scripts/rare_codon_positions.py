@@ -43,7 +43,7 @@ def plot_positions(positions):
     pos = list(itertools.chain(*positions))
 
     n, bins, patches = plt.hist(
-        pos, np.arange(0, 1, 0.25),
+        pos, np.arange(0, 1.0001, 0.01),
         facecolor='khaki')
 
     plt.title('Rare codon position overview')
