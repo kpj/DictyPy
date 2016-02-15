@@ -56,6 +56,26 @@ def plot_positions(positions, label):
     plt.savefig('rarest_codon_positions.pdf')
     #plt.show()
 
+def show_codon_share(pos_dict, resolution=2):
+    """ Show which triplet appears how often at which position
+    """
+    # transform data
+    tmp = collections.defaultdict(list)
+    for trip, pos in pos_dict.items():
+        for p in pos:
+            tmp[round(p, resolution)].append(trip)
+
+    # save data
+    with open('rare_codon_positions.txt', 'w') as fd:
+        for pos, codons in sorted(tmp.items()):
+            count = collections.Counter(codons)
+            mc = sorted(count.most_common())
+
+            fd.write('%.2f\n' % pos)
+            for cod, am in mc:
+                fd.write(' %s: %d\n' % (cod, am))
+            fd.write('\n')
+
 def get_codu(genes, group):
     """ Compute codon usage for all genes or only for certain expression group if file is given
     """
@@ -78,6 +98,7 @@ def main():
     rarest = get_rare_codons(codu)
     pos = get_codon_positions(rarest.values(), genes)
 
+    show_codon_share(pos)
     plot_positions(pos.values(), label)
 
 
