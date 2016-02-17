@@ -94,7 +94,7 @@ def main():
     farser = FastaParser(sys.argv[1])
     genes = farser.parse()
 
-    codu, label = get_codu(genes, 'weak')
+    codu, label = get_codu(genes, 'strong')
     rarest = get_rare_codons(codu)
     pos = get_codon_positions(rarest.values(), genes)
 
