@@ -19,13 +19,15 @@ from utils import find_all_positions
 from gene_expression_analysis import extract_expression_levels, group_expression_levels
 
 
-def get_rare_codons(codu):
-    """ Extract rarest codon for each amino acid
+def get_rare_codons(codu, rare_thres=0.15):
+    """ Extract rarest codon for each amino acid if it is used less often than `rare_thres`
     """
     res = {}
     for aa, codons in sorted(CodonUsage.SynonymousCodons.items()):
         min_codon = min(codons, key=lambda c: codu[c] if not codu[c] is None else float('inf'))
-        res[aa] = min_codon
+
+        if codu[min_codon] < rare_thres:
+            res[aa] = min_codon
     return res
 
 def get_codon_positions(codons, genes):
