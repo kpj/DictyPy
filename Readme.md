@@ -6,7 +6,7 @@ Group all dicty genes into functional groups and compute respective codon usages
 
 
 ## Usage
-The program is started by calling `python main.py`. Blast-specific applications can be executed via `python blaster.py`.
+The program is started by calling `python main.py`. Blast-specific applications can be executed via `python scripts/blaster.py`.
 
 
 ## Notes for Blast
